@@ -329,8 +329,7 @@ def login():
                     se = StringVar()
                     co_code = StringVar()
                     co_name = StringVar()
-                    mydata = []
-                    dataset_dir = os.path.join(root_dir,'face-db')
+                    
 
                     # Label for the title
                     Label(first, text="Create New Class", bg="#134B70", fg="#FDFFE2", padx=15, pady=15, 
@@ -345,34 +344,46 @@ def login():
                         command=back).place(x=1400, y=10)  
                     
                     # Frame to hold the search btn
-                    frame1 = Frame(first, bg = "#577B8D")
-                    frame1.place(x=50, y=130, width=1450, height=50)
-
+                    # frame1 = Frame(first, bg = "#577B8D")
+                    # frame1.place(x=50, y=130, width=1450, height=50)
+                    # Update window to get accurate width and height
+                    first.update_idletasks()
+                    window_width = first.winfo_width()
                     # Frame to hold the Treeview
-                    frame = Frame(first, bg = "#577B8D")
-                    frame.place(x=50, y=200, width=610, height=600)
+                    frame = Frame(first, bg = "#577B8D", borderwidth=5, relief=RIDGE)
+                    window_width = first.winfo_width()
+                    frame_width = window_width // 2
+                    frame.place(x=50, y=125, width=frame_width - 75, height=700)
+
+                    # Frame cho phần tìm kiếm
+                    search_frame = Frame(frame, bg="#577B8D")
+                    search_frame.pack(side=TOP, fill=X, padx=10, pady=10)
 
                     # Frame to hold a Create Class Widget
-                    frame2 = Frame(first, bg = "#577B8D")
-                    frame2.place(x=700, y=200, width=600, height=600)
-
-                    # Frame to hold a Submit Btn
-                    frame3 = Frame(first, bg="#577B8D", width=100, height=50)
-                    frame3.pack(side=BOTTOM, anchor=SE, padx=40, pady=61)
-                    frame3.pack_propagate(False) 
+                    frame2 = Frame(first, bg = "#577B8D", borderwidth=5, relief=RIDGE)
+                    frame2.place(x=775, y=125, width=frame_width - 75, height=700)
+                
+                    # # Frame to hold a Submit Btn
+                    # frame3 = Frame(first, bg="#577B8D", width=100, height=50)
+                    # frame3.pack(side=BOTTOM, anchor=SE, padx=40, pady=61)
+                    # frame3.pack_propagate(False) 
 
                     # Create a treeview for displaying the data
-                    scrollbar_y = ttk.Scrollbar(frame, orient=VERTICAL)
+                    table_frame = Frame(frame, bg = "#577B8D")
+                    table_frame.pack(fill=BOTH, expand=True, padx=10, pady= 10)
+
+                    scrollbar_y = ttk.Scrollbar(table_frame, orient=VERTICAL)
                     columns = ("course_code", "course_name", "ay_schoolYear", "se_ID")
-                    table1 = ttk.Treeview(frame,  yscrollcommand=scrollbar_y.set, columns=columns, show='headings')
+                    table1 = ttk.Treeview(table_frame,  yscrollcommand=scrollbar_y.set, columns=columns, show='headings')
                     scrollbar_y.config(command=table1.yview)
-                    frame.grid_rowconfigure(0, weight=1)
+                    
                     # Sắp xếp các thành phần
                     scrollbar_y.pack(side=RIGHT, fill=Y)
+                    table1.pack(side=LEFT, fill=BOTH, expand=True)
 
                     # Hàm lấy dữ liệu về học kỳ - năm học
                     def search_se_year():
-                        conn = pymysql.connect(host = 'localhost', user = 'root', password = 'orcl', database = 'face_recognition')
+                        conn = pymysql.connect(host = 'localhost', user = 'root', password = "orcl", database = 'face_recognition')
                         cur = conn.cursor()
                         try:
                             # Lấy dữ liệu về học kỳ
@@ -399,16 +410,16 @@ def login():
                         sem_id = se_options.get(search_sem.get())
                         year = search_year.get()
                         try:
-                            if search_year.get() == "" and search_sem.get() == "":
+                            if search_year.get() == "Chọn Năm Học" and search_sem.get() == "Chọn Học Kỳ":
                                 messagebox.showwarning('Input Error', 'Please select either Year or Semester')
                                 return
-                            if search_year.get() == "":
+                            if search_year.get() == "Chọn Năm Học":
                                 cur.execute("""SELECT cfa.course_code, c.course_name, cfa.ay_schoolYear, s.se_semesterName
                                             FROM coursefollowacayear cfa
                                             JOIN courses c ON cfa.course_code = c.course_code
                                             JOIN semester s ON cfa.se_ID = s.se_ID
                                             WHERE cfa.se_ID = %s""", (sem_id,))
-                            elif search_sem.get() == "":
+                            elif search_sem.get() == "Chọn Học Kỳ":
                                 cur.execute("""SELECT cfa.course_code, c.course_name, cfa.ay_schoolYear, s.se_semesterName
                                             FROM coursefollowacayear cfa
                                             JOIN courses c ON cfa.course_code = c.course_code
@@ -477,9 +488,10 @@ def login():
                                 co_name.set(row[1])
                                 school_year.set(row[2])
                                 se.set(row[3])
+
                     # Submit Data
                     def submit_data():
-                        conn = pymysql.connect(host="localhost", user="root", password="orcl", database="face_recognition")
+                        conn = pymysql.connect(host="localhost", user="root", password= "orcl", database="face_recognition")
                         cur = conn.cursor()
                         
                         cl_code = ipt5.get()
@@ -536,71 +548,91 @@ def login():
                         conn.close()
 
                     # Create a treeview for display the inputs
-                    title1 = Label(frame1, text = "Search By: " ,bg = "#577B8D", fg="#FDFFE2", font = ("Times New Roman", 20, "bold"))
+                    title1 = Label(search_frame, text = "Search By: " ,bg = "#577B8D", fg="#FDFFE2", font = ("Times New Roman", 20, "bold"))
                     title1.pack(side=LEFT, padx=10, pady=10, anchor=W)
                     # Tạo Combobox
                     se_options, year_options = search_se_year()
+                    style = ttk.Style()
+                    style.configure('Custom.TCombobox', padding=(5, 5, 5, 5))
                     # Năm Học
-                    search_year = ttk.Combobox(frame1, values=year_options, state="readonly", width=30)
+                    
+                    search_year = ttk.Combobox(search_frame, values=year_options, state="readonly", width=20, style='Custom.TCombobox', height=25)
                     search_year.pack(side=LEFT, padx=10, pady=10)
                     # Học Kỳ
-                    search_sem = ttk.Combobox(frame1, values=list(se_options.keys()), state="readonly", width=30)
+                    search_sem = ttk.Combobox(search_frame, values=list(se_options.keys()), state="readonly", width=20, style='Custom.TCombobox', height=25)
                     search_sem.pack(side=LEFT, padx=10, pady=10)
                     # Đặt giá trị mặc định cho Combobox (tùy chọn)
                     search_year.set("Chọn Năm Học")
                     search_sem.set("Chọn Học Kỳ")
                     #btn
-                    search_button = Button(frame1, text="Search", bg="#134B70", fg="#FDFFE2", font=("Times New Roman", 15), width= 5, command= search_by_year_se)
-                    search_button.pack(side=LEFT, padx=10, pady=10)
-                    clear_btn = Button(frame1, text="Clear", bg="#134B70", fg="#FDFFE2", font=("Times New Roman", 15), width= 5, command= clear)
-                    clear_btn.pack(side=LEFT, padx=10, pady=10)
+                    button_frame = Frame(search_frame, bg="#577B8D")
+                    button_frame.pack(side=LEFT)
+
+                    search_button = Button(button_frame, text="Search", bg="#134B70", fg="#FDFFE2", font=("Times New Roman", 15), width= 5, command= search_by_year_se)
+                    search_button.pack(side=LEFT, padx=(20, 5))
+                    clear_btn = Button(button_frame , text="Clear", bg="#134B70", fg="#FDFFE2", font=("Times New Roman", 15), width= 5, command= clear)
+                    clear_btn.pack(side=LEFT)
 
                     # Width of the frame and offsets to center the widgets
-                    frame_width = 600
+                    frame_width1 = 600
                     label_width = 130  # approximate width of the label in pixels
                     entry_width = 200  # approximate width of the entry in pixels
                     gap = 20  # gap between label and entry
 
                     # Calculating the x position to center the widgets
-                    x_label = (frame_width - (label_width + entry_width + gap)) // 2
+                    x_label = (frame_width1 - (label_width + entry_width + gap)) // 2
                     x_entry = x_label + label_width + gap
 
                     # Treeview for display create class widget
-                    lb1 = Label(frame2, text="Mã Học Phần", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                    Label_Frame = Frame(frame2, bg="#134B70")
+                    Label_Frame.pack(side=TOP, pady=(10, 10))
+
+                    lb = Label(Label_Frame, text="Tạo Nhóm Học Phần", bg="#134B70", fg="#FDFFE2", font=("Times New Roman", 20, "bold"), padx=15, pady=15, borderwidth=5, relief=RIDGE)
+                    lb.pack()
+
+                    form_frame = Frame(frame2, bg = "#577B8D")
+                    form_frame.pack(fill=BOTH, expand=True, padx=10, pady=(10, 50))  # Thêm padding phía dưới
+                    lb1 = Label(form_frame, text="Mã Học Phần", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                     lb1.place(x=x_label, y=50)
-                    ipt1 = Entry(frame2, state="disabled", textvariable = co_code, width=23, font=("italic", 13, "bold"))
+                    ipt1 = Entry(form_frame, state="disabled", textvariable = co_code, width=35, font=("italic", 13, "bold"))
                     ipt1.place(x=x_entry, y=50)
 
-                    lb2 = Label(frame2, text="Tên Học Phần", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                    lb2 = Label(form_frame, text="Tên Học Phần", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                     lb2.place(x=x_label, y=100)
-                    ipt2 = Entry(frame2, state="disabled", textvariable = co_name, width=30, font=("italic", 12, "bold"))
+                    ipt2 = Entry(form_frame, state="disabled", textvariable = co_name, width=35, font=("italic", 12, "bold"))
                     ipt2.place(x=x_entry, y=100)
 
-                    lb3 = Label(frame2, text="Năm Học", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                    lb3 = Label(form_frame, text="Năm Học", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                     lb3.place(x=x_label, y=150)
-                    ipt3 = Entry(frame2, state="disabled",  textvariable = school_year, width=23, font=("italic", 12, "bold"))
+                    ipt3 = Entry(form_frame, state="disabled",  textvariable = school_year, width=35, font=("italic", 12, "bold"))
                     ipt3.place(x=x_entry, y=150)
 
-                    lb4 = Label(frame2, text="Học Kỳ", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                    lb4 = Label(form_frame, text="Học Kỳ", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                     lb4.place(x=x_label, y=200)
-                    ipt4 = Entry(frame2, state="disabled", textvariable = se, width=23, font=("italic", 12, "bold"))
+                    ipt4 = Entry(form_frame, state="disabled", textvariable = se, width=35, font=("italic", 12, "bold"))
                     ipt4.place(x=x_entry, y=200)
                     
-                    lb5 = Label(frame2, text="Chọn Nhóm Học Phần", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                    lb5 = Label(form_frame, text="Chọn Nhóm", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                     lb5.place(x=x_label, y=250)
 
                     class_options = ["M01", "M02", "M03", "M04"]
-                    ipt5 = ttk.Combobox(frame2, values=class_options, state="readonly", width=15, font=("italic", 13, "bold"))
+                    ipt5 = ttk.Combobox(form_frame, values=class_options, state="readonly", width=33, font=("italic", 13, "bold"))
                     ipt5.set("Chọn Nhóm")
-                    ipt5.place(x=x_entry + 35, y=250)  
+                    ipt5.place(x=x_entry , y=250)  
 
-                    lb6 = Label(frame2, text="Nhập Số Lượng", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                    lb6 = Label(form_frame, text="Nhập Số Lượng", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                     lb6.place(x=x_label, y=300)
-                    ipt6 = Entry(frame2, width=15, font=("italic", 13, "bold"))
-                    ipt6.place(x=x_entry + 10, y=300)
+                    ipt6 = Entry(form_frame, width=35, font=("italic", 13, "bold"))
+                    ipt6.place(x=x_entry, y=300)
 
-                    clear_Class = Button(frame2, text="Clear", bg="#134B70", fg="#FDFFE2", font=("Times New Roman", 15), width=5, command=clear_data)
-                    clear_Class.place(relx=1.0, rely=1.0, x=-10, y=-10, anchor="se")
+
+                    button_frame1 = Frame(frame2, bg="#577B8D")
+                    button_frame1.pack(fill=X, side=BOTTOM, padx=10, pady=10)
+                    clear_Class = Button(button_frame1, text="Clear", bg="#134B70", fg="#FDFFE2", font=("Times New Roman", 15), width=5, command=clear_data)
+                    clear_Class.pack(side=RIGHT, padx=(0, 10))
+                    # # Submit Btn
+                    submit_btn = Button(button_frame1, text="Submit", bg="#134B70", fg="#FDFFE2", font=("Times New Roman", 15), width= 7, command= submit_data)
+                    submit_btn.pack(side=RIGHT, padx=(0, 10))
                     
                     # Define the headings
                     for col in columns:
@@ -618,15 +650,12 @@ def login():
                     table1.column("ay_schoolYear", width=100, anchor='w')
                     table1.column("se_ID", width=100, anchor='w')
 
-                    padding = 10
-                    table1.place(x=padding, y=padding, width=600-2*padding, height=600-2*padding)
+                    
 
                     # Focus Data
                     table1.bind("<<TreeviewSelect>>", focus_data)
 
-                    # Submit Btn
-                    submit_btn = Button(frame3, text="Submit", bg="#134B70", fg="#FDFFE2", font=("Times New Roman", 15), width= 7, command= submit_data)
-                    submit_btn.place(relx=0.5, rely=0.5, anchor="center")
+                    
                     # Initial call to display to populate the table
                     display()
 
