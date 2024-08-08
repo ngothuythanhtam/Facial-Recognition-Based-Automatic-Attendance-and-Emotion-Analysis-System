@@ -19,6 +19,7 @@ from tkinter import *
 import pymysql
 from PIL import Image, ImageTk
 # from extract_embeddings import Extract_Embeddings
+from test_detect import reco
 import time
 from os import *
 import pandas as pd
@@ -1266,166 +1267,151 @@ def login():
 ##############################################################################################################################################################
 
 ######################################################### Function to recognize faces and take attendance ####################################################
-                def face_recognize():
-                    try:
-                        conn = pymysql.connect(host = "localhost", user = "root", password = "", database = "face_recognition")
-                        cur = conn.cursor()
-                        recognize_window = Toplevel()
-                        recognize_window.state('zoomed')
-                        recognize_window.configure(bg="#ccd9de")
-                        recognize_window.title("Mark Attendance")
-                        face = Label(recognize_window, text = "Mark Attendance" , bg = "#134B70" , fg="#FDFFE2", padx = 10, pady = 10, font = ("Times New Roman", 14, "bold") ,borderwidth = 5, relief = RIDGE).place(x = 680, y = 13)
+#                 def face_recognize():
+#                     try:
+#                         conn = pymysql.connect(host = "localhost", user = "root", password = "", database = "face_recognition")
+#                         cur = conn.cursor()
+#                         recognize_window = Toplevel()
+#                         recognize_window.state('zoomed')
+#                         recognize_window.configure(bg="#ccd9de")
+#                         recognize_window.title("Mark Attendance")
+#                         face = Label(recognize_window, text = "Mark Attendance" , bg = "#134B70" , fg="#FDFFE2", padx = 10, pady = 10, font = ("Times New Roman", 14, "bold") ,borderwidth = 5, relief = RIDGE).place(x = 680, y = 13)
                         
-                        #Back button
-                        def back():
-                            global cap
-                            if cap:
-                                cap.release()
-                            recognize_window.destroy()
-                        backbtn = Button(recognize_window, text='Back', font=('Times new Roman', 15), fg='#E7F6F2', bg='#2C3333', height=1, width=7, command=back)
-                        backbtn.place(x=1425, y=20)
+#                         #Back button
+#                         def back():
+#                             global cap
+#                             if cap:
+#                                 cap.release()
+#                             recognize_window.destroy()
+#                         backbtn = Button(recognize_window, text='Back', font=('Times new Roman', 15), fg='#E7F6F2', bg='#2C3333', height=1, width=7, command=back)
+#                         backbtn.place(x=1425, y=20)
                         
-                        #All Required variables for database
-                        search_from_group = StringVar()
-                        search_from_course = StringVar()
+#                         #All Required variables for database
+#                         search_from_group = StringVar()
+#                         search_from_course = StringVar()
                         
-                        def group_course():
-                            conn = pymysql.connect(host = 'localhost', user = 'root', password = '', database = 'face_recognition')
-                            cur = conn.cursor()
-                            try:
-                                # Lấy dữ liệu về nhóm học phần
-                                cur.execute("SELECT clCourse_ID, clCourse_code FROM classcourse")
-                                group_data = cur.fetchall()
+#                         def group_course():
+#                             conn = pymysql.connect(host = 'localhost', user = 'root', password = '', database = 'face_recognition')
+#                             cur = conn.cursor()
+#                             try:
+#                                 # Lấy dữ liệu về nhóm học phần
+#                                 cur.execute("SELECT clCourse_ID, clCourse_code FROM classcourse")
+#                                 group_data = cur.fetchall()
 
-                                # Lấy dữ liệu về mã học phần
-                                cur.execute("SELECT course_ID, course_code, course_name FROM courses")
-                                course_data = cur.fetchall()
-                            finally:
-                                conn.close()
+#                                 # Lấy dữ liệu về mã học phần
+#                                 cur.execute("SELECT course_ID, course_code FROM courses where course_code like '%CT%H%'")
+#                                 course_data = cur.fetchall()
+#                             finally:
+#                                 conn.close()
                                     
-                            group_options = {name: clCourse_ID for clCourse_ID, name in group_data}
-                            course_options = {name: course_ID for course_ID, name in course_data}
+#                             group_options = {name: clCourse_ID for clCourse_ID, name in group_data}
+#                             course_options = {name: course_ID for course_ID, name in course_data}
+#                             return group_options, course_options
                                 
-                            return group_options, course_options
+#                         def on_select(event):
+#                             selected_value = course_btn.get()
+#                             print(f"Selected: {selected_value}")
                             
-                        def search_group_course():
-                            conn = pymysql.connect(host='localhost', user='root', password='', database='face_recognition')
-                            cur = conn.cursor()
-                            grp_ID = group_options.get(group_btn.get())
-                            course_ID = course_options.get(course_btn.get())
-                            try:
-                                if group_btn.get()=='' or course_btn.get()=='':
-                                    messagebox.showwarning('Input Error', 'Please select Group Code and and Course Code')
-                                    return
-                                else:
-                                    cur.execute("""select c.clCourse_code, cfa.course_code, s.st_code from classcourse c 
-                                    join coursefollowacayear cfa on c.cfa_ID = %s
-                                    join studying s on c.clCourse_ID = %s
-                                    ;""", (grp_ID, course_ID))
-                            
-                                data = cur.fetchall()
-                                if data:
-                                    table1.delete(*table1.get_children())
-                                    for row in data:
-                                        table1.insert('', END, values=row)
-                                else:
-                                    messagebox.showinfo('Sorry', 'No Data Found', parent=recognize_window)
-                            finally:
-                                conn.close()
-                                
-                        # clear data
-                        # def clear():
-                        #     group_btn.set("Chọn Năm Học")
-                        #     search_sem.set("Chọn Học Kỳ")   
-                        #     display()
-            
-                        # Function to display data from the database
-                        def display():
-                            # Reconnect to the database inside the function
-                            conn = pymysql.connect(host="localhost", user="root", password="", database="face_recognition")
-                            cur = conn.cursor()
+#                         def update_options(event):
+#                             # Lấy giá trị hiện tại trong combobox
+#                             input_value = course_btn.get()
 
-                            # Execute the query
-                            cur.execute("""
-                                select c.clCourse_code, cfa.course_code, s.st_code from classcourse c 
-                                join coursefollowacayear cfa on c.cfa_ID = cfa.cfa_ID
-                                join studying s on c.clCourse_ID = s.clCourse_ID
-                                ;
-                            """)
-
-                            # Fetch all data
-                            data = cur.fetchall()
+#                             # Lọc danh sách gợi ý dựa trên giá trị nhập vào
+#                             filtered_options = [option for option in course_options if option.lower().startswith(input_value.lower())]
+#                             # Cập nhật danh sách các tùy chọn nhưng không mở dropdown ngay lập tức
+#                             course_btn['values'] = filtered_options
+#                             course_btn.config(foreground='black')
                             
-                            ##### Large Frame #####
-                            large_frame = Frame(recognize_window, bg = "#577B8D",borderwidth = "3", relief = SUNKEN, height = 700, width = 800)
-                            large_frame.place(x = 20, y = 80)
-                            
-                            group_options, course_options = group_course()
-                                
-                            group_btn = ttk.Combobox(recognize_window, textvariable = search_from_group, values = group_options , state = "readonly", width =16, font=('Times new Roman', 18))
-                            group_btn.place(x = 75, y = 114)
-                            group_btn.set('Select Group ID')
-                            # group_btn.bind("<Return>", lambda event: search_data())
-                            
-                            course_btn = ttk.Combobox(recognize_window, textvariable = search_from_course, values = course_options, state = "readonly", width =16, font=('Times new Roman', 18))
-                            course_btn.place(x = 335, y = 114)
-                            course_btn.set('Select Course ID')
-                            # course_btn.bind("<Return>", lambda event: search_data())
-                            
-                            search_btn = Button(recognize_window,  text = "Search ",bg = "#40679E",fg="#FDFFE2", height = "1", width = "10",font = ("Times new Roman", 14 , "bold"), command=search_group_course).place(x = 647, y = 112 ) 
-                                                        
-                            cam = Frame(recognize_window, bg = "white",borderwidth = "2", height = 520, width = 690)
-                            cam.place(x = 75, y = 165)
-                            cam_img = Image.open('./img/camera.png').resize((200, 190), Image.Resampling.LANCZOS)
-                            cam_photo = ImageTk.PhotoImage(cam_img)
-                            cam_label = Label(cam, image = cam_photo, font = ("Times New Roman" , 16), fg = "#344C64", height =210, width = 235, compound = BOTTOM) # type: ignore 
-                            cam_label.place(relwidth=1, relheight=1)
-                                
-                            start_btn = Button(large_frame, text = "Start", bg = "#40679E",fg="#FDFFE2", height = "1", width = "7", font = ("Times new Roman", 14 , "bold")).place(x = 75, y = 625)
-                                
-                            stop_btn = Button(large_frame, text = "Stop", bg = "#40679E",fg="#FDFFE2", height = "1", width = "7", font = ("Times new Roman", 14 , "bold")).place(x = 275, y = 625)
-                                
-                            ##### Small Frame #####
-                            small_frame = Frame(recognize_window, height = 700, width = 670, bg = "#577B8D", borderwidth = "3", relief = SUNKEN)
-                            small_frame.place(x = 845, y = 80)
-                                
-                            save_btn = Button(small_frame,  text = "Save ",bg = "#40679E",fg="#FDFFE2", height = "1", width = "10", font = ("Times new Roman", 14 , "bold")).place(x = 515, y = 625 ) 
+#                         def open_dropdown(event=None):
+#                             # Kiểm tra nếu người dùng nhập một giá trị và danh sách có các tùy chọn phù hợp
+#                             if course_btn.get() != placeholder_text and len(course_btn['values']) > 0:
+#                                 course_btn.event_generate('<Down>')  # Mở dropdown
                         
-                            ##### Table frame #####
-                            table_frame = Frame(small_frame, bg = "#577B8D", borderwidth = "2", relief = SUNKEN)
-                            table_frame.place(x = 30, y = 30, height = 573, width = 605)
-                            style = ttk.Style()
-                            # Configure the Treeview heading style
-                            style.configure("Treeview.Heading", foreground="#201E43",font=('times new Roman', 14, 'bold'))
-                            scroll_x =Scrollbar(table_frame, orient = HORIZONTAL)
-                            scroll_y = Scrollbar(table_frame, orient = VERTICAL)
-                            table1 = ttk.Treeview(table_frame, columns = ("studying_st_code","studying_clCourse_ID", "session_date","time_status"), xscrollcommand = scroll_x.set, yscrollcommand = scroll_y.set)
-                            scroll_x.pack(side = BOTTOM, fill = X )
-                            scroll_y.pack(side = RIGHT, fill = Y)
-                            scroll_x.config(command = table1.xview)
-                            scroll_y.config(command = table1.yview)
-                            table1.heading("studying_st_code", text ="Student Code",anchor='w')
-                            table1.heading('studying_clCourse_ID', text = "Group",anchor='w')
-                            table1.heading("session_date",text = "Date",anchor='w')
-                            table1.heading("time_status", text = "Time",anchor='w')
-                            table1['show'] = 'headings'
-                            table1.column("studying_st_code", width = 119,anchor='w')
-                            table1.column("studying_clCourse_ID", width = 50, anchor='w')
-                            table1.column("session_date", width = 80, anchor='w')
-                            table1.column("time_status", width = 50, anchor='w')
-                            table1.pack(fill = BOTH, expand = True)
-                            # table1.bind("<ButtonRelease-1>", focus_data)
+#                         def clear_placeholder(event):
+#                             if course_btn.get() == placeholder_text:
+#                                 course_btn.delete(0, tk.END)
+#                                 course_btn.config(foreground='black')
+
+#                         def reset_placeholder(event):
+#                             if course_btn.get() == '':
+#                                 course_btn.insert(0, placeholder_text)
+#                                 course_btn.config(foreground='black')
+                        
+#                         def start_camera():
+#                             global cap, cam_label
+#                             if cap:
+#                                 cap.release()  # Giải phóng camera nếu đang mở
+#                             cap = cv2.VideoCapture(0)
+#                             if not cap.isOpened():
+#                                 messagebox.showerror("Error", "Could not open camera.", parent=recognize_window)
+#                                 return
+#                             update_frame()
+                        
+#                         def update_frame():
+#                             global cap
+#                             if cap: 
+#                                 ret, frame = cap.read() 
+#                                 if ret:
+#                                     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+#                                     faces = detector(gray)
+#                                     for face in faces:
+#                                         landmarks = predictor(gray, face)
+#                                         for n in range(0, 68):
+#                                             x = landmarks.part(n).x
+#                                             y = landmarks.part(n).y
+#                                             cv2.circle(frame, (x, y), 1, (255, 0, 0), -1)
+#                                     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+#                                     img = Image.fromarray(frame)
+#                                     imgtk = ImageTk.PhotoImage(image=img)
+#                                     cam_label.imgtk = imgtk # type: ignore
+#                                     cam_label.configure(image=imgtk) # type: ignore
+#                                 cam_label.after(10, update_frame)
                                 
-                            # Hàm lấy dữ liệu về nhóm học phần - mã học phần
+#                         def stop_camera():
+#                             global cap
+#                             if cap:
+#                                 cap.release()
+#                                 cap = None
+#                             cv2.destroyAllWindows()
+                       
+                       
+#                         large_frame = Frame(recognize_window, bg = "#577B8D",borderwidth = "3", relief = SUNKEN, height = 700, width = 800)
+#                         large_frame.place(x = 20, y = 80)
+#                         group_options, course_options = group_course()
                                 
-                            recognize_window.mainloop()
-                            cv2.destroyAllWindows()
+#                         group_btn = ttk.Combobox(recognize_window, textvariable = search_from_group, values=list(group_options.keys()) , state = "readonly", width =16, font=('Times new Roman', 18))
+#                         group_btn.place(x = 75, y = 114)
+#                         group_btn.set('Select Group ID')
+#                         group_btn.config(foreground='black')
                             
-                    except pymysql.err.OperationalError as e:
-                        messagebox.showerror( "Error","Sql Connection Error... Open Xamp Control Panel and then start MySql Server ")
-                    except Exception as e:
-                        print(e)
-                        messagebox.showerror("Error","Close all the windows and restart your program")
+#                         course_btn = ttk.Combobox(recognize_window, textvariable = search_from_course, values=list(course_options.keys()), state = "normal", width =16, font=('Times new Roman', 18))
+#                         course_btn.place(x = 335, y = 114)
+#                         placeholder_text = 'Select Course ID'
+#                         course_btn.insert(0, placeholder_text)
+#                         course_btn.bind("<<ComboboxSelected>>", on_select)
+#                         course_btn.bind("<KeyRelease>", update_options)
+#                         course_btn.bind("<Return>", open_dropdown)
+#                         course_btn.bind("<FocusOut>", open_dropdown)
+#                         course_btn.bind("<FocusIn>", clear_placeholder)
+#                         course_btn.bind("<FocusOut>", reset_placeholder)
+                            
+#                         cam = Frame(recognize_window, bg = "white",borderwidth = "2", height = 520, width = 690)
+#                         cam.place(x = 75, y = 165)
+#                         cam_img = Image.open('./img/camera.png').resize((200, 190), Image.Resampling.LANCZOS)
+#                         cam_photo = ImageTk.PhotoImage(cam_img)
+#                         cam_label = Label(cam, image = cam_photo, font = ("Times New Roman" , 16), fg = "#344C64", height =210, width = 235, compound = BOTTOM) # type: ignore 
+#                         cam_label.place(relwidth=1, relheight=1)
+                                
+#                         start_btn = Button(large_frame, text = "Start", bg = "#40679E",fg="#FDFFE2", height = "1", width = "7", font = ("Times new Roman", 14 , "bold")).place(x = 75, y = 625)
+#                         stop_btn = Button(large_frame, text = "Stop", bg = "#40679E",fg="#FDFFE2", height = "1", width = "7", font = ("Times new Roman", 14 , "bold")).place(x = 275, y = 625)
+                        
+#                         recognize_window.mainloop()
+#                         cv2.destroyAllWindows()
+#                     except pymysql.err.OperationalError as e:
+#                         messagebox.showerror( "Error","Sql Connection Error... Open Xamp Control Panel and then start MySql Server ")
+#                     except Exception as e:
+#                         print(e)
+#                         messagebox.showerror("Error","Close all the windows and restart your program")
 
 ##############################################################################################################################################################
 
@@ -1480,9 +1466,10 @@ def login():
                 train_btn =  Button(window , image = photo6 , text = "Train the data" , font = ("Times new roman", 16), fg = "#344C64" , height = 210, width= 235 , compound = BOTTOM ) # type: ignore
                 train_btn.place(x = 50, y = 500)
 
+                reco_obj = reco()
                 img7 = (Image.open('./img/face-scanner.png')).resize((170, 160), Image.Resampling.LANCZOS)
                 photo7 = ImageTk.PhotoImage(img7)
-                recognize_btn = Button(window , image = photo7 , text = "Face Recognition" , font = ("Times new roman", 16), fg = "#344C64" , height = 210, width= 235 , compound = BOTTOM, command=face_recognize ) # type: ignore
+                recognize_btn = Button(window , image = photo7 , text = "Face Recognition" , font = ("Times new roman", 16), fg = "#344C64" , height = 210, width= 235 , compound = BOTTOM, command=reco_obj.test) # type: ignore
                 recognize_btn.place(x = 348, y = 500)
 
                 img8 = Image.open('./img/emo.png').resize((170, 160), Image.Resampling.LANCZOS)

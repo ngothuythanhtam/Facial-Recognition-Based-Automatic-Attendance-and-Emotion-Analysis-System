@@ -1,5 +1,6 @@
 create database face_recognition default charset utf8mb4;
 use face_recognition;
+drop database face_recognition;
 
 
 -- Ngành Học
@@ -36,8 +37,6 @@ create table students (
     foreign key (cl_className) references class(cl_className) on delete cascade
 );
 
-select * from students;
-
 -- Quản Trị Viên
 -- làm rõ ai là người quản lí
 create table administrator (
@@ -65,8 +64,7 @@ create table accounts (
 
 -- Năm Học
 create table years (
-	ay_ID int primary key auto_increment,
-    ay_schoolYear varchar(255) not null
+    ay_schoolYear varchar(255) not null primary key
 );
 
 -- Học Kỳ
@@ -78,12 +76,11 @@ create table semester (
 -- Niên Khoá 
 create table academicYear (
 	aca_ID int auto_increment primary key,
-	ay_ID int,
+	ay_schoolYear varchar(255),
     se_ID int,
     foreign key (se_ID) references semester (se_ID),
-    foreign key (ay_ID) references years (ay_ID)
+    foreign key (ay_schoolYear) references years (ay_schoolYear)
 );
-
 
 -- Học Phần 
 create table courses (
@@ -94,27 +91,35 @@ create table courses (
 	maj_Code varchar(8),
     foreign key (maj_Code) references majors(maj_Code) on delete cascade
 );
-select * from courses;
-
 -- Quản Lí Môn Học Theo Niên Khoá
 create table courseFollowAcaYear (
 	cfa_ID int primary key auto_increment,
-	course_ID int,
-    aca_ID int,
-    foreign key (course_ID) references courses (course_ID),
-    foreign key (aca_ID) references academicYear (aca_ID)
+	course_code varchar(10),
+    ay_schoolYear varchar(255),
+    se_ID int,
+    foreign key (course_code) references courses (course_code),
+    foreign key (se_ID) references semester (se_ID),
+    foreign key (ay_schoolYear) references years (ay_schoolYear)
 );
 
 -- Nhóm Học Phần
+# create table classCourse (
+# 	clCourse_ID int auto_increment primary key,
+# 	clCourse_code varchar(10),
+#     clCourse_className varchar(255) not null,
+#     clCourse_amount int not null,
+#     clCourse_remainAmount int default 0,
+# 	cfa_ID int,
+#     foreign key (cfa_ID) references courseFollowAcaYear (cfa_ID)
+# );
 create table classCourse (
 	clCourse_ID int auto_increment primary key,
 	clCourse_code varchar(10),
-    clCourse_className varchar(255) not null,
     clCourse_amount int not null,
-    clCourse_remainAmount int default 0,
 	cfa_ID int,
     foreign key (cfa_ID) references courseFollowAcaYear (cfa_ID)
 );
+insert into classcourse values("", "M01","21", '44');
 
 -- Học Phần thuộc Ngành
 -- create table courseOfMajor (
@@ -136,14 +141,28 @@ create table teaching (
 
 -- Học 
 create table studying (
-	st_ID int,
+	st_code varchar(8),
     clCourse_ID int,
-    foreign key (st_ID) references students (st_ID),
+    foreign key (st_code) references students (st_code),
     foreign key (clCourse_ID) references classCourse (clCourse_ID),
-    primary key (st_ID, clCourse_ID)
+    primary key (st_code, clCourse_ID)
 );
+select * from studying;
 
+CREATE TABLE attendance (
+    att_ID INT AUTO_INCREMENT,
+    studying_st_code varchar(8),
+    studying_clCourse_ID INT,
+    session_date DATE,
+    time_status TIME,
+    FOREIGN KEY (studying_st_code, studying_clCourse_ID) 
+        REFERENCES studying (st_code, clCourse_ID),
+    PRIMARY KEY (att_ID),
+    UNIQUE KEY (studying_st_code, studying_clCourse_ID, session_date)
+);
+select * from attendance;
 
+insert into attendance values ('', "B2111949", 5,current_date(), curtime());
 
 -- TESTING 
 -- insert
@@ -160,21 +179,61 @@ insert into semester values
 (2, 'Học Kỳ 2'),
 (3, 'Học Kỳ Hè');
 
-insert into academicYear (ay_ID, se_ID) values 
-('1', '1'),
-('1', '2'),
-('1', '3');
+insert into academicYear (ay_schoolYear, se_ID) values 
+('2021-2022', '1'),
+('2021-2022', '2'),
+('2021-2022', '3'),
+('2022-2023', '1'),
+('2022-2023', '2'),
+('2022-2023', '3'),
+('2023-2024', '1'),
+('2023-2024', '2'),
+('2023-2024', '3'),
+('2024-2025', '1'),
+('2024-2025', '2'),
+('2024-2025', '3'),
+('2025-2026', '1'),
+('2025-2026', '2'),
+('2025-2026', '3');
 
 insert into majors (maj_Code, maj_name) 
-value ('7480201C', 'Công Nghệ Thông Tin');
+value ('7480201C', 'Công Nghệ Thông Tin - CLC');
 
 insert into class (cl_className, maj_Code) values
  ('DI21V7F1', '7480201C'),
  ('DI21V7F2', '7480201C'),
  ('DI21V7F3', '7480201C'),
  ('DI21V7F4', '7480201C');
-select * from courses;
- select * from students;
+ 
+ insert into roles values(1, 'teacher'),(2,'student');
+
 insert into administrator values('','1','Thanh Tam', '0123456789','1');
 select * from administrator;
-delete from administrator where ad_ID = 1;
+
+select * from class;
+select * from courses;
+select * from students;
+select * from majors;
+select * from academicYear;
+select * from years;
+select * from classcourse;
+select * from coursefollowacayear;
+select * from studying;
+select * from students;
+select * from accounts;
+select * from roles;
+drop table accounts;
+select * from attendance;
+select * from semester;
+
+select c.clCourse_code, cfa.course_code, s.st_code from classcourse c 
+	join coursefollowacayear cfa on c.cfa_ID = cfa.cfa_ID
+	join studying s on c.clCourse_ID = s.clCourse_ID
+    ;
+
+SELECT cl.clCourse_ID, cl.clCourse_code, c.course_name FROM classcourse cl 
+join coursefollowacayear cfa on cl.cfa_ID = cfa.cfa_ID
+join courses c on c.course_code = cfa.course_code
+where cfa.cfa_ID=50;
+
+SELECT * from coursefollowacayear ;
