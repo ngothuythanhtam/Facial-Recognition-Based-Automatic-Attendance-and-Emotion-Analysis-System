@@ -63,7 +63,7 @@ def login():
         messagebox.showerror('Error','All the fields are required', parent = face)
     else:
         try:
-            conn = pymysql.connect(host = 'localhost', user = 'root', password = '', database = 'face_recognition')
+            conn = pymysql.connect(host = 'localhost', user = 'root', password = 'orcl', database = 'face_recognition')
             curr = conn.cursor()
             curr.execute('select * from administrator where ad_code = %s and ad_pass = %s',(username_var.get(), password_var.get()))
             row = curr.fetchone()
@@ -75,7 +75,7 @@ def login():
 ######################################################### Function to import data from excel to MySQL ########################################################
                 def import_data():
                     try:
-                        conn = pymysql.connect(host="localhost", user="root", password="", database="face_recognition")
+                        conn = pymysql.connect(host="localhost", user="root", password="orcl", database="face_recognition")
                         cur = conn.cursor()
                         import_window = Toplevel()
                         import_window.state('zoomed')
@@ -111,7 +111,7 @@ def login():
                             if not file_paths:
                                 messagebox.showerror("Error", "No files selected for import.", parent=import_window)
                                 return
-                            conn = pymysql.connect(user='root', password='', host='localhost', database='face_recognition')
+                            conn = pymysql.connect(user='root', password='orcl', host='localhost', database='face_recognition')
                             cur = conn.cursor()
                             try:
                                 with cur:
@@ -152,7 +152,7 @@ def login():
                             if not file_paths:
                                 messagebox.showerror("Error","No files selected for import.", parent=import_window)
                                 return
-                            conn = pymysql.connect(user='root', password='', host='localhost', database='face_recognition')
+                            conn = pymysql.connect(user='root', password='orcl', host='localhost', database='face_recognition')
                             cur = conn.cursor()
                             
                             try:
@@ -200,7 +200,7 @@ def login():
                             if not file_paths:
                                 messagebox.showerror("Error","No files selected for import.", parent=import_window)
                                 return
-                            conn = pymysql.connect(user='root', password='', host='localhost', database='face_recognition')
+                            conn = pymysql.connect(user='root', password='orcl', host='localhost', database='face_recognition')
                             cur = conn.cursor()
                             try:
                                 with cur:
@@ -249,7 +249,7 @@ def login():
                             if not file_paths:
                                 messagebox.showerror("Error","No files selected for import.", parent=import_window)
                                 return
-                            conn = pymysql.connect(user='root', password='', host='localhost', database='face_recognition')
+                            conn = pymysql.connect(user='root', password='orcl', host='localhost', database='face_recognition')
                             cur = conn.cursor()
                             
                             try:
@@ -372,7 +372,7 @@ def login():
 
                     # Hàm lấy dữ liệu về học kỳ - năm học
                     def search_se_year():
-                        conn = pymysql.connect(host = 'localhost', user = 'root', password = '', database = 'face_recognition')
+                        conn = pymysql.connect(host = 'localhost', user = 'root', password = 'orcl', database = 'face_recognition')
                         cur = conn.cursor()
                         try:
                             # Lấy dữ liệu về học kỳ
@@ -394,7 +394,7 @@ def login():
                     
                     # hàm search
                     def search_by_year_se():
-                        conn = pymysql.connect(host='localhost', user='root', password='', database='face_recognition')
+                        conn = pymysql.connect(host='localhost', user='root', password='orcl', database='face_recognition')
                         cur = conn.cursor()
                         sem_id = se_options.get(search_sem.get())
                         year = search_year.get()
@@ -444,7 +444,7 @@ def login():
                     # Function to display data from the database
                     def display():
                         # Reconnect to the database inside the function
-                        conn = pymysql.connect(host="localhost", user="root", password="", database="face_recognition")
+                        conn = pymysql.connect(host="localhost", user="root", password="orcl", database="face_recognition")
                         cur = conn.cursor()
 
                         # Execute the query
@@ -479,7 +479,7 @@ def login():
                                 se.set(row[3])
                     # Submit Data
                     def submit_data():
-                        conn = pymysql.connect(host="localhost", user="root", password="", database="face_recognition")
+                        conn = pymysql.connect(host="localhost", user="root", password="orcl", database="face_recognition")
                         cur = conn.cursor()
                         
                         cl_code = ipt5.get()
@@ -637,7 +637,7 @@ def login():
 ######################################################### Function to collect dataset ########################################################################
                 def collect_dataset():
                     try:
-                        conn = pymysql.connect(host = "localhost", user = "root", password = "", database = "face_recognition")
+                        conn = pymysql.connect(host = "localhost", user = "root", password = "orcl", database = "face_recognition")
                         cur = conn.cursor()
                         collect_window = Toplevel()
                         collect_window.state('zoomed')
@@ -707,7 +707,7 @@ def login():
                         ##### Write the images collected to the created folder #####
                         def add_photos():
                             global cap
-                            conn = pymysql.connect(host = "localhost", user = "root", password = "", database = "face_recognition")
+                            conn = pymysql.connect(host = "localhost", user = "root", password = "orcl", database = "face_recognition")
                             cur1 = conn.cursor()
                             query = "SELECT st_code FROM students WHERE st_code = %s"
                             cur1.execute(query, (scode_var.get(),))
@@ -790,7 +790,7 @@ def login():
 
                         ##### Display the data of Student #####
                         def display():
-                            conn = pymysql.connect(host = "localhost", user = "root", password = "", database = "face_recognition")
+                            conn = pymysql.connect(host = "localhost", user = "root", password = "orcl", database = "face_recognition")
                             cur = conn.cursor()
                             cur.execute("select st_code, st_fullName, st_email, cl_className from students")
                             data = cur.fetchall()
@@ -906,7 +906,7 @@ def login():
 
                         ##### Search student's information #####
                         def search_data():
-                            conn = pymysql.connect(host = "localhost", user = "root", password = "", database = "face_recognition")
+                            conn = pymysql.connect(host = "localhost", user = "root", password = "orcl", database = "face_recognition")
                             cur = conn.cursor()
                             if search_result.get()=="":
                                 cur.execute("select st_code, st_fullName, st_email, cl_className from students where cl_className = %s", (search_from.get(),))
@@ -931,7 +931,7 @@ def login():
                         
                         ##### Update 'students' table in MySQL #####
                         def update_db():
-                            conn = pymysql.connect(host = "localhost", user = "root", password = "", database = "face_recognition")
+                            conn = pymysql.connect(host = "localhost", user = "root", password = "orcl", database = "face_recognition")
                             cur = conn.cursor()
                             if sname_var.get()=="" or smail_var.get() =="" or sclass_var.get()=="":
                                 messagebox.showerror("Error","All fields are Required", parent = collect_window)
@@ -1036,7 +1036,7 @@ def login():
 ######################################################### Function to display photo samples ##################################################################
                 def photo_samples():
                     try:
-                        conn = pymysql.connect(host = "localhost", user = "root", password = "", database = "face_recognition")
+                        conn = pymysql.connect(host = "localhost", user = "root", password = "orcl", database = "face_recognition")
                         cur = conn.cursor()
                         photo_window = Toplevel()
                         photo_window.state('zoomed')
@@ -1059,7 +1059,7 @@ def login():
 
                         ##### Display the student's information #####
                         def display():
-                            conn = pymysql.connect(host = "localhost", user = "root", password = "", database = "face_recognition")
+                            conn = pymysql.connect(host = "localhost", user = "root", password = "orcl", database = "face_recognition")
                             cur = conn.cursor()
                             selected_class = search_from.get()
                             if selected_class == "Show All" or selected_class=="":
@@ -1099,7 +1099,7 @@ def login():
 
                         ##### Search student info #####
                         def search_data():
-                            conn = pymysql.connect(host = "localhost", user = "root", password = "", database = "face_recognition")
+                            conn = pymysql.connect(host = "localhost", user = "root", password = "orcl", database = "face_recognition")
                             cur = conn.cursor()
                             if search_from.get()=="" or search_from.get()=="Show All":
                                 cur.execute("select st_code, st_fullName, cl_classname from students where st_code = %s", (search_result.get(),))
@@ -1268,7 +1268,7 @@ def login():
 ######################################################### Function to recognize faces and take attendance ####################################################
                 def face_recognize():
                     try:
-                        conn = pymysql.connect(host = "localhost", user = "root", password = "", database = "face_recognition")
+                        conn = pymysql.connect(host = "localhost", user = "root", password = "orcl", database = "face_recognition")
                         cur = conn.cursor()
                         recognize_window = Toplevel()
                         recognize_window.state('zoomed')
@@ -1290,7 +1290,7 @@ def login():
                         search_from_course = StringVar()
                         
                         def group_course():
-                            conn = pymysql.connect(host = 'localhost', user = 'root', password = '', database = 'face_recognition')
+                            conn = pymysql.connect(host = 'localhost', user = 'root', password = 'orcl', database = 'face_recognition')
                             cur = conn.cursor()
                             try:
                                 # Lấy dữ liệu về nhóm học phần
@@ -1309,7 +1309,7 @@ def login():
                             return group_options, course_options
                             
                         def search_group_course():
-                            conn = pymysql.connect(host='localhost', user='root', password='', database='face_recognition')
+                            conn = pymysql.connect(host='localhost', user='root', password='orcl', database='face_recognition')
                             cur = conn.cursor()
                             grp_ID = group_options.get(group_btn.get())
                             course_ID = course_options.get(course_btn.get())
@@ -1342,7 +1342,7 @@ def login():
                         # Function to display data from the database
                         def display():
                             # Reconnect to the database inside the function
-                            conn = pymysql.connect(host="localhost", user="root", password="", database="face_recognition")
+                            conn = pymysql.connect(host="localhost", user="root", password="orcl", database="face_recognition")
                             cur = conn.cursor()
 
                             # Execute the query
