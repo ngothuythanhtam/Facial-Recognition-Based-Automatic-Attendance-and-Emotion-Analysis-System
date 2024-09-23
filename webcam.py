@@ -25,11 +25,9 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 IDENTIFIED_IMG_SIZE = 112
 TEXT_COLOR = (255, 255, 255)
 
-
-
 def get_excel_file_path() -> str:
     try:
-        with open('attendance_info.json', 'r') as config_file:
+        with open('attendance_files/attendance_info.json', 'r') as config_file:
             config = json.load(config_file)
             file_path = config.get("attendance_file_path")
             if file_path and isinstance(file_path, str):
@@ -537,7 +535,7 @@ def perform_facial_recognition(
 
         img = overlay_identified_face(
             img=img,
-            target_img=target_img,
+            target_img=target_img, # type: ignore
             label=target_label,
             x=x,
             y=y,

@@ -150,9 +150,9 @@ def fromfiles(
         anti_spoofing=anti_spoofing,
     ) 
 
-# db_path="face-db"
-# source_path="test2"
-# dest_path="result/face_analysis"
+db_path="face-db"
+source_path="test1"
+dest_path="test2"
 # models = [
 #   "VGG-Face", 
 #   "Facenet", 

@@ -26,7 +26,7 @@ import os, cv2, json
 
 def get_excel_file_path() -> str:
     try:
-        with open('emo_info.json', 'r') as config_file:
+        with open('emotion/emo_info.json', 'r') as config_file:
             config = json.load(config_file)
             file_path = config.get("emo_file_path")
             if file_path and isinstance(file_path, str):
@@ -84,9 +84,6 @@ def mark_emo(emo: str, file_path: str = '', sheet_name: str = 'Sheet'):
 
     except Exception as e:
         print(f"Could not write emotion to Excel file. Error: {str(e)}")
-# Example Usage:
-# Assuming you have an emotion_df DataFrame ready and you want to log it into 'emotions_log.xlsx'
-# log_emotion_to_excel(emotion_df, "emotions_log.xlsx")
 
 # pylint: disable=unused-variable
 def analysis(

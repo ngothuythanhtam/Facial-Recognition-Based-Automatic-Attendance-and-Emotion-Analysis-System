@@ -1,3 +1,5 @@
+import glob
+import subprocess
 import pickle
 import os
 from datetime import datetime
@@ -416,6 +418,7 @@ def login():
                             except Exception as e:
                                 print(e)
                                 messagebox.showerror("Error", "Close all the windows and restart your program")
+    
     ##############################################################################################################################################################
 
     ######################################################### Function to create class ###########################################################################
@@ -723,6 +726,7 @@ def login():
                             except Exception as e:
                                 print(e)
                                 messagebox.showerror("Error", "Close all the windows and restart your program")
+    
     ##############################################################################################################################################################
 
     ######################################################### Function to collect dataset ########################################################################
@@ -1041,6 +1045,7 @@ def login():
                             except Exception as e:
                                 print(e)
                                 messagebox.showerror("Error","Close all the windows and restart your program")
+    
     ##############################################################################################################################################################
 
     ######################################################### Function to display photo samples ##################################################################
@@ -1262,6 +1267,7 @@ def login():
                             except Exception as e:
                                 print(e)
                                 messagebox.showerror("Error","Close all the windows and restart your program")
+    
     ##############################################################################################################################################################
 
     ######################################################### Function to recognize faces and take attendance ####################################################
@@ -1314,38 +1320,73 @@ def login():
                                 # Initialize camera capture object
                                 cap = cv2.VideoCapture(0)  
 
-                                def update_json_with_excel_path(course_code: str, group_code: str, json_path: str = 'attendance_info.json'):
+                                def update_json_with_excel_path(course_code: str, group_code: str, json_path: str = 'attendance_files/attendance_info.json'):
                                     """
                                     Update the JSON file with a new Excel file path each time this function is called.
                                     """
                                     try:
+                                        global instructor_name
+                                        ins_Code = username_var.get()
+                                        # Truy vấn tên giảng viên
+                                        curr.execute('SELECT ins_name FROM instructor WHERE ins_instructorCode = %s', (username_var.get(),))
+                                        instructor_row = curr.fetchone()
+                                        if instructor_row:
+                                            instructor_name = instructor_row[0]
+                                            print(f"teached by instructor: {instructor_name}")
+                                        else:
+                                            print("Instructor name not found")
+
                                         # Create a directory to store the attendance files
                                         directory = 'attendance_files'
+                                        dir_course = f'attendance_files/{course_code}'
+                                        dir_group = f'attendance_files/{course_code}/{group_code}'
+
+                                        # Check and create directories if they don't exist
                                         if not os.path.exists(directory):
                                             os.makedirs(directory)
+                                        if not os.path.exists(dir_course):
+                                            os.makedirs(dir_course)
+                                        if not os.path.exists(dir_group):
+                                            os.makedirs(dir_group)
 
                                         # Generate a timestamped filename
                                         date_att = datetime.now().strftime('%d-%m-%Y')
                                         file_name = f'{course_code}_{group_code}_{date_att}.xlsx'
-                                        file_path = os.path.join(directory, file_name)
+                                        file_path = os.path.join(dir_group, file_name)
 
                                         # Create a new Excel file
                                         workbook = openpyxl.Workbook()
                                         sheet = workbook.active
                                         if sheet is not None:
                                             sheet.title = "Sheet"
-                                            sheet['A1'] = course_code
-                                            sheet['B1'] = group_code
-                                            sheet['C1'] = date_att
-                                            sheet['A2'] = 'Student'
-                                            sheet['B2'] = 'Time'
-                                            sheet['C2'] = 'Date'
+                                            sheet['A1'] = "Course"
+                                            sheet['B1'] = "Group"
+                                            sheet['C1'] = "Date"
+                                            sheet['D1'] = "Lecturer Code"
+                                            sheet['E1'] = "Lecturer Name"
+                                            sheet['A2'] = course_code
+                                            sheet['B2'] = group_code
+                                            sheet['C2'] = date_att
+                                            sheet['D2'] = ins_Code
+                                            sheet['E2'] = instructor_name
+                                            sheet['A3'] = 'Student'
+                                            sheet['B3'] = 'Time'
+                                            sheet['C3'] = 'Date'
                                         
                                         workbook.save(file_path)
+
+                                        # Check if the JSON file exists, create if it doesn't
+                                        if not os.path.exists(json_path):
+                                            with open(json_path, 'w') as json_file:
+                                                json.dump({}, json_file)
+
                                         # Update JSON file with the new file path
-                                        data = {"attendance_file_path": file_path}
-                                        with open(json_path, 'w') as json_file:
-                                            json.dump(data, json_file)
+                                        with open(json_path, 'r+') as json_file:
+                                            data = json.load(json_file)
+                                            data["attendance_file_path"] = file_path
+                                            json_file.seek(0)
+                                            json.dump(data, json_file, indent=4)
+
                                         print(f"New Excel file created at {file_path} and JSON updated.")
                                         return file_path
                                     
@@ -1358,24 +1399,131 @@ def login():
                                     This function handles the creation of a new Excel file with the course and group data
                                     and updates the JSON file with the new Excel file path.
                                     """
+                                    
                                     course_code = course_combobox.get()
                                     group_code = class_combobox.get()
+                                    if course_code == "Choose Course":
+                                        messagebox.showerror("Error", "Please select a course!", parent=face_window)
+                                    elif group_code == "Choose Group":
+                                        messagebox.showerror("Error", "Please select a group!", parent=face_window)
+                                    elif group_code == "No class yet":
+                                        messagebox.showerror("Error", f"Group does not exist. Please contact admin for help!", parent=face_window)
+                                    else:
+                                        # Update the Excel file path in JSON and save course and group data
+                                        excel_file_path = update_json_with_excel_path(course_code, group_code)
 
-                                    if course_code == "Choose Course" or course_code == "" or group_code == "Choose Group" or group_code == "":
-                                        messagebox.showerror("Error", "Please select both a course and a group!", parent = face_window)
-                                        return
-                                    # Update the Excel file path in JSON and save course and group data
-                                    excel_file_path = update_json_with_excel_path(course_code, group_code)
+                                        # Continue with face recognition stream (or any other action)
+                                        face_analysis.stream(
+                                            db_path="face-db",
+                                            enable_face_analysis=False,
+                                            model_name="ArcFace",
+                                            detector_backend="retinaface",
+                                            anti_spoofing=False,
+                                            source=0,
+                                        )
+                                        messagebox.showinfo("Done", "Camera is closed!", parent=face_window)
+                                        course_combobox.set("Choose Course")
+                                        class_combobox.set("Choose Group") # sửa thêm trường hợp chọn m04 cho ct054h sau khi chọn 051h
 
-                                    # Continue with face recognition stream (or any other action)
-                                    face_analysis.stream(
-                                        db_path="face-db",
-                                        enable_face_analysis=False,
-                                        model_name="ArcFace",
-                                        detector_backend="retinaface",
-                                        anti_spoofing=False,
-                                        source=0,
-                                    )
+                                def import_excel():
+                                    try:
+                                        file_path = get_excel()
+                                        if not file_path:
+                                            messagebox.showerror("Error", "Excel file not found or course/group not selected.", parent=main_frame)
+                                            return
+
+                                        def get_class(event=None):
+                                            global cl_ID
+                                            try:
+                                                class_options = search_class()  # Assuming this returns a list of class names or IDs
+                                                selected_class = class_combobox.get()
+
+                                                if class_options is None:
+                                                    print("class_options is None")
+                                                    return
+
+                                                # Check if the selected class is in the class_options list
+                                                if selected_class in class_options:
+                                                    # Get the index or the value of the selected class from the list
+                                                    cl_ID = selected_class  # Assuming the selected class itself is the ID
+                                                    print(f"cour_id: {cl_ID}")
+                                                else:
+                                                    raise ValueError("Selected class not found in options.")
+
+                                                print(f"class_id_get_class: {cl_ID}")
+                                            except Exception as e:
+                                                print(f"Error in get_class: {e}")
+                                                messagebox.showerror("Error", f"Error in getting class: {e}", parent=main_frame)
+
+                                        def execute(file_path):
+                                            get_class()
+                                            global cl_ID
+                                            if cl_ID is None:
+                                                messagebox.showerror("Error", "Class ID not selected.", parent=main_frame)
+                                                return
+                                            print(f"class_id_execute: {cl_ID}")
+
+                                            try:
+                                                df = pd.read_excel(file_path, sheet_name='Sheet')
+                                                if df.empty:
+                                                    raise ValueError("Empty Excel File")
+                                                
+                                                # Xóa hàng đầu tiên
+                                                df = df.iloc[1:]
+                                                # Đổi tên cột để phù hợp với cơ sở dữ liệu
+                                                df.columns = ['studying_st_code', 'time_status', 'session_date']
+                                                # Chuyển đổi định dạng ngày
+                                                df['session_date'] = pd.to_datetime(df['session_date'], format='%d-%m-%Y').dt.strftime('%Y-%m-%d')
+                                                df = df[['studying_st_code', 'session_date', 'time_status']]
+
+                                                with conn.cursor() as cursor:
+                                                    insert_query = """
+                                                    INSERT INTO attendance(studying_clCourse_ID, studying_st_code, session_date, time_status)
+                                                    VALUES (%s, %s, %s, %s);
+                                                    """
+                                                    for index, row in df.iterrows():
+                                                        cursor.execute(insert_query, (cl_ID, row['studying_st_code'], row['session_date'], row['time_status']))
+                                                    conn.commit()
+                                                messagebox.showinfo("Success", "Data imported successfully into the 'attendance' table.", parent=main_frame)
+                                            except Exception as e:
+                                                messagebox.showerror("Error", f"An error occurred: {e}", parent=main_frame)
+                                                print(f"An error occurred: {e}")
+                                                conn.rollback()
+                                        file_path = get_excel()
+                                        execute(file_path)
+                                    except Exception as e:
+                                        messagebox.showerror("Error", f"An error occurred: {e}", parent=main_frame)
+                                        conn.rollback()
+
+                                def get_excel():
+                                    """
+                                    Get the excel files.
+                                    """
+                                    try:
+                                        course_code = course_combobox.get()
+                                        group_code = class_combobox.get()
+                                        if course_code == "Choose Course":
+                                            messagebox.showerror("Error", "Please select a course!", parent=face_window)
+                                        elif group_code == "Choose Group":
+                                            messagebox.showerror("Error", "Please select a group!", parent=face_window)
+                                        elif group_code == "No class yet":
+                                            messagebox.showerror("Error", f"Group does not exist. Please contact admin for help!", parent=face_window)
+                                        else:
+                                            dir_course = f'attendance_files/{course_code}'
+                                            dir_group = f'{dir_course}/{group_code}'
+
+                                            date_att = datetime.now().strftime('%d-%m-%Y')
+                                            file_name = f'{course_code}_{group_code}_{date_att}.xlsx'
+                                            file_path = os.path.join(dir_group, file_name)
+
+                                            if not os.path.exists(dir_group):
+                                                messagebox.showerror("Error", f"Group {group_code} of {course_code} does not exist. Please contact admin for help!", parent=face_window)
+                                            else:
+                                                messagebox.showinfo("Success",f'Excel file located at: {dir_group}', parent=face_window)
+                                    
+                                    except Exception as e:
+                                        print(f"Error finding Excel file: {str(e)}")
+                                        messagebox.showerror("Error", f"Error finding Excel file: {str(e)}", parent=face_window)
 
                                 face_window = Toplevel()
                                 face_window.title("Face Recognizer Page")
@@ -1420,8 +1568,11 @@ def login():
                                 button_frame = Frame(main_frame)
                                 button_frame.grid(row=3, column=1, padx=10, pady=(20, 10))
 
-                                start_btn = Button(button_frame, text="Start", width=5, activebackground="#008DDA", activeforeground="white", font=("times new roman", 20, "bold"), relief=GROOVE, bg="#22577E", fg="#FDFFE2", command=mark_attendance)
-                                start_btn.grid(row=3, column=1, padx=10)
+                                start_btn = Button(button_frame, text="Start", width=5, activebackground="#008DDA", activeforeground="white", font=("times new roman", 18, "bold"), relief=GROOVE, bg="#22577E", fg="#FDFFE2", command=mark_attendance)
+                                start_btn.grid(row=3, column=1, padx=5, pady=(0, 20))
+
+                                import_btn = Button(button_frame, text="Import Excel", width=10, activebackground="#008DDA", activeforeground="white", font=("times new roman", 18, "bold"), relief=GROOVE, bg="#22577E", fg="#FDFFE2", command=import_excel)
+                                import_btn.grid(row=3, column=2, padx=5, pady=(0, 20)) 
 
                                 Label(face_window, text="Press q to stop camera !", fg='red',bg="#ccd9de", font=("times new roman", 18, "bold")).place(x=1200, y=800)
 
@@ -1437,6 +1588,7 @@ def login():
                             except Exception as e:
                                 print(e)
                                 messagebox.showerror("Error", "Close all the windows and restart your program")
+    
     ##############################################################################################################################################################
 
     ######################################################### Function to analyze emotion ########################################################################
@@ -1460,13 +1612,16 @@ def login():
                                         
                                         # Create directory for emo files if not exist
                                         directory = 'emotion'
-                                        dir = f'emotion/{course_code}_{group_code}'
-                                        src_dir = f'{dir}/images'
-                                        des_dir = f'{dir}/results'
+                                        dir_course = f'emotion/{course_code}'
+                                        dir_group = f'emotion/{course_code}/{group_code}'
+                                        src_dir = f'{dir_group}/images'
+                                        des_dir = f'{dir_group}/results'
                                         if not os.path.exists(directory):
                                             os.makedirs(directory)
-                                        elif not os.path.exists(dir):
-                                            os.makedirs(dir)
+                                        elif not os.path.exists(dir_course):
+                                            os.makedirs(dir_course)
+                                        elif not os.path.exists(dir_group):
+                                            os.makedirs(dir_group)
                                         elif not os.path.exists(src_dir):
                                             os.makedirs(src_dir)
                                         elif not os.path.exists(des_dir):
@@ -1475,7 +1630,7 @@ def login():
                                         # Generate a timestamped filename for the Excel file
                                         date_att = datetime.now().strftime('%d-%m-%Y')
                                         file_name = f'{course_code}_{group_code}_{date_att}.xlsx'
-                                        file_path = os.path.join(dir, file_name)
+                                        file_path = os.path.join(dir_group, file_name)
 
                                         # Create a new Excel file and populate it with the course and group information
                                         workbook = openpyxl.Workbook()
@@ -1491,8 +1646,20 @@ def login():
                                         workbook.save(file_path)
 
                                         # Update the JSON file with the new Excel file path
-                                        data = {"emo_file_path": file_path}
-                                        json_path = 'emo_info.json'
+                                        # data = {"emo_file_path": file_path}
+                                        json_path = 'emotion/emo_info.json'
+
+                                         # Check if the JSON file exists, create if it doesn't
+                                        if not os.path.exists(json_path):
+                                            with open(json_path, 'w') as json_file:
+                                                json.dump({}, json_file)
+
+                                        # Update JSON file with the new file path
+                                        with open(json_path, 'r+') as json_file:
+                                            data = json.load(json_file)
+                                            data["emo_file_path"] = file_path
+                                            json_file.seek(0)
+                                            json.dump(data, json_file, indent=4)
                                         with open(json_path, 'w') as json_file:
                                             json.dump(data, json_file)
                                         print(f"New Excel file created at {file_path} and JSON updated.")
@@ -1515,7 +1682,7 @@ def login():
 
                                     except Exception as e:
                                         print(f"Error creating Excel file or updating JSON: {str(e)}")
-                                        messagebox.showerror("Error", f"Error creating Excel file or updating JSON: {str(e)}")
+                                        messagebox.showerror("Error", f"Error creating Excel file or updating JSON: {str(e)}", parent=Emotion_Analysis_window)
 
                                 # Hàm lấy dữ liệu về học phần - lớp
                                 def search_course():
@@ -1554,7 +1721,8 @@ def login():
                                         class_combobox.config(values=class_options)
                                     return class_options
 
-                                def collect_photo(interval_minutes, total_duration_minutes):
+                                interval_minutes_var = IntVar()
+                                def collect_photo(interval_minutes: int, total_duration_minutes):
                                     course_code = course_combobox.get()
                                     group_code = class_combobox.get()
                                     if course_code == "Choose Course" or course_code == "" or group_code == "Choose Group" or group_code == "":
@@ -1567,21 +1735,29 @@ def login():
                                         print("Error: Cannot open camera")
                                         return
                                     
+                                    # Create directory for emo files if not exist
                                     directory = 'emotion'
-                                    dir = f'emotion/{course_code}_{group_code}'
-                                    src_dir = f'{dir}/images'
+                                    dir_course = f'emotion/{course_code}'
+                                    dir_group = f'emotion/{course_code}/{group_code}'
+                                    src_dir = f'{dir_group}/images'
+                                    des_dir = f'{dir_group}/results'
+
+                                    # Check and create directories if they don't exist
                                     if not os.path.exists(directory):
                                         os.makedirs(directory)
-                                    elif not os.path.exists(dir):
-                                        os.makedirs(dir)
-                                    elif not os.path.exists(src_dir):
+                                    if not os.path.exists(dir_course):
+                                        os.makedirs(dir_course)
+                                    if not os.path.exists(dir_group):
+                                        os.makedirs(dir_group)
+                                    if not os.path.exists(src_dir):
                                         os.makedirs(src_dir)
-                                    
+                                    if not os.path.exists(des_dir):
+                                        os.makedirs(des_dir)
+                                
                                     # Làm tròn lên để đảm bảo chụp đủ số lần trong thời gian quy định
                                     total_images = total_duration_minutes // interval_minutes
                                     count = 0  # Đếm số lượng ảnh đã chụp
                                     interval_seconds = interval_minutes * 60  # Chuyển đổi phút thành giây
-
                                     try:
                                         while count < total_images:
                                             ret, frame = cap.read()
@@ -1590,15 +1766,13 @@ def login():
                                                 break
 
                                             print(f"Waiting {interval_minutes} minutes until next capture...")
-                                            time.sleep(interval_seconds)  # Chờ trong 15 phút
+                                            time.sleep(interval_seconds)  # Chờ trong ... phút
                                             
                                             # Lưu ảnh với thời gian hiện tại làm tên file
                                             timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
                                             file_name_path = f"{src_dir}/img_{timestamp}.jpg"
                                             cv2.imwrite(file_name_path, frame)
-
                                             count += 1
-
                                             cv2.imshow('Captured Image', frame)
                                             key = cv2.waitKey(1)
                                             if key == ord('q'):
@@ -1613,15 +1787,26 @@ def login():
 
                                 # Create a button
                                 def on_start():
-                                    # Calculate total_duration_minutes based on the selected option
-                                    selected_value = int(class_period.get())
-                                    total_duration_minutes = selected_value * 1 #50
-                                
-                                    # Set interval_minutes to 15
-                                    interval_minutes = 1 #15
+                                    try: 
+                                        # Calculate total_duration_minutes based on the selected option
+                                        selected_value = int(class_period.get())
+                                        total_duration_minutes = selected_value * 2 #50
                                     
-                                    # Call collect_photo with the calculated parameters
-                                    collect_photo(interval_minutes, total_duration_minutes)
+                                        # Set interval_minutes to 15
+                                        interval_minutes = interval_minutes_var.get() #15
+                                        type_interval_minutes = type(interval_minutes)
+                                        print(type_interval_minutes)
+                                        if interval_minutes == 0:
+                                            messagebox.showerror("Error", "Interval cannot be 0!", parent=Emotion_Analysis_window)
+                                            return
+                                        else:
+                                            messagebox.showinfo("Success","Camera is ready", parent=Emotion_Analysis_window)
+                                            # Call collect_photo with the calculated parameters
+                                            collect_photo(interval_minutes, total_duration_minutes)
+                                    except Exception as e:
+                                        # Catch and print the TclError
+                                        print(f"Error occurred: {e}")
+                                        messagebox.showerror("Error", "Interval must be an integer!", parent=Emotion_Analysis_window)
 
                                 Emotion_Analysis_window = Toplevel()
                                 Emotion_Analysis_window.title("Collect Emotion")
@@ -1636,42 +1821,47 @@ def login():
                                 title_label = Label(Emotion_Analysis_window, text="Emotional Analysis Page", font=("times new roman", 25, "bold"), bg="#134B70", fg="#FDFFE2", bd=7, relief=GROOVE)
                                 title_label.place(x=0, y=0, relwidth=1)
 
-                                main_frame = Frame(Emotion_Analysis_window, bg="#EEEEEE")
-                                main_frame.place(x=550, y=240)
+                                main_frame = Frame(Emotion_Analysis_window, bg="#EEEEEE", width=700, height=550)
+                                main_frame.place(x=400, y=200)
                                 
-                                logo_icon = Image.open('./img/emo.png').resize((100, 100), Image.Resampling.LANCZOS)
+                                logo_icon = Image.open('./img/emo.png').resize((110, 110), Image.Resampling.LANCZOS)
                                 logo_img = ImageTk.PhotoImage(logo_icon, master=main_frame) # type: ignore
                                 logo_label = Label(main_frame, image=logo_img, bd=0)
-                                logo_label.grid(row=0, columnspan=3, pady=40, padx=40)
+                                logo_label.place(x=300, y=30)
 
                                 course_label = Label(main_frame, text="Courses", bg="#EEEEEE", compound=RIGHT, font=("times new roman", 15, "bold"))
-                                course_label.grid(row=1, column=0, padx=20, pady=5,sticky="E")
-                                class_label = Label(main_frame, text="Classes", bg="#EEEEEE", compound=RIGHT, font=("times new roman", 15, "bold"))
-                                class_label.grid(row=2, column=0, padx=20, pady=5, sticky="E")
-                                class_period_label=Label(main_frame, text="Class Period", bg="#EEEEEE", compound=RIGHT, font=("times new roman", 15, "bold"))
-                                class_period_label.grid(row=3, column=0, padx=20, pady=5, sticky="E")
-
+                                course_label.place(x=250, y=200)
                                 course_options = search_course()
                                 course_combobox = ttk.Combobox(main_frame, values=list(course_options.keys()), font=("times new roman", 12), state="readonly")
                                 course_combobox.set("Choose Course")
-                                course_combobox.grid(row=1, column=1, padx=30, pady=10)
+                                course_combobox.place(x=380, y=200)
                                 course_combobox.bind('<<ComboboxSelected>>', search_class)
 
+                                class_label = Label(main_frame, text="Classes", bg="#EEEEEE", compound=RIGHT, font=("times new roman", 15, "bold"))
+                                class_label.place(x=255, y=250)
                                 class_combobox = ttk.Combobox(main_frame, font=("times new roman", 12), state="readonly")
                                 class_combobox.set("Choose Group")
-                                class_combobox.grid(row=2, column=1, padx=30, pady=10)
+                                class_combobox.place( x=380, y=250)
 
+                                class_period_label=Label(main_frame, text="Class Period", bg="#EEEEEE", compound=RIGHT, font=("times new roman", 15, "bold"))
+                                class_period_label.place( x=213, y=300)
                                 class_period = ttk.Combobox(main_frame, values=["1", "2", "3", "4", "5"], font=("times new roman", 12), state="readonly")
                                 class_period.set("Choose Class Period")
-                                class_period.grid(row=3, column=1, padx=30, pady=10)
+                                class_period.place(x=380, y=300)
 
-                                start_btn = Button(main_frame, text="Start", width=6, activebackground="#008DDA", activeforeground="white", font=("times new roman", 20, "bold"), relief=GROOVE, bg="#22577E", fg="#FDFFE2", command=on_start)
-                                start_btn.grid(row=4, column=0, padx=10, pady=35, sticky="E")
+                                interval_min_label = Label(main_frame, text="Set interval minutes",bg="#EEEEEE", compound=RIGHT, font=("times new roman", 15, "bold"))
+                                interval_min_label.place( x=153, y=350)
+                                interval_min_box = Entry(main_frame,width = 22, textvariable = interval_minutes_var ,font=("times new roman", 12))
+                                interval_min_box.place( x=380, y=350)
 
-                                analyze_btn = Button(main_frame, text="Analyze", width=6, activebackground="#008DDA", activeforeground="white", font=("times new roman", 20, "bold"), relief=GROOVE, bg="#22577E", fg="#FDFFE2", command=mark_emo)
-                                analyze_btn.grid(row=4, column=1, padx=30, pady=35, sticky="W")
+                                start_btn = Button(main_frame, text="Start", width=9, activebackground="#008DDA", activeforeground="white", font=("times new roman", 20, "bold"), relief=GROOVE, bg="#22577E", fg="#FDFFE2", command=on_start)
+                                start_btn.place( x=90, y=420)  
 
-                                Label(Emotion_Analysis_window, text="Press q to stop camera !", fg='red',bg="#ccd9de", font=("times new roman", 18, "bold")).place(x=1200, y=800)
+                                analyze_btn = Button(main_frame, text="Analyze", width=9, activebackground="#008DDA", activeforeground="white", font=("times new roman", 20, "bold"), relief=GROOVE, bg="#22577E", fg="#FDFFE2", command=mark_emo)
+                                analyze_btn.place(x=275, y=420)  
+
+                                import_btn = Button(main_frame, text="Import db", width=10, activebackground="#008DDA", activeforeground="white", font=("times new roman", 20, "bold"), relief=GROOVE, bg="#22577E", fg="#FDFFE2")
+                                import_btn.place( x=440, y=420)  
 
                                 def exit_window(event=None):
                                     Emotion_Analysis_window.destroy()
@@ -1683,6 +1873,305 @@ def login():
                             except Exception as e:
                                 print(e)
                                 messagebox.showerror("Error", "Close all the windows and restart your program")
+    
+    ##############################################################################################################################################################
+
+    ################################################################# Function for report ########################################################################
+                    def reports():
+                        conn = connect()
+                        if conn:
+                            cur = conn.cursor()
+                            try: 
+
+                                # Hàm lấy dữ liệu về học phần - lớp
+                                def search_course():
+                                    cur.execute("select cfa_ID, course_code from courseFollowAcaYear where course_code LIKE '%_H';;")
+                                    cfa_data = cur.fetchall()
+                                    course_options = {c_code: c_id for c_id, c_code in cfa_data}
+                                    return course_options
+                                
+                                def search_class(event=None):
+                                    try:
+                                        selected_course = course_combobox.get()
+                                        # Ensure course_options is not None
+                                        if course_options is None:
+                                            print("course_options is None")
+                                            return
+                                        c_id = course_options.get(selected_course)
+                                        if c_id is not None:
+                                            cour_id = int(c_id)
+                                            print(f"cour_id: {cour_id}")  # Debug: Check the value of cour_id
+                                            print(type(cour_id))  # Debug: Ensure cour_id is an integer
+                                        
+                                        cur.execute('''SELECT clCourse_ID, cl.clCourse_code
+                                                    FROM classCourse cl 
+                                                    JOIN courseFollowAcaYear cfa ON cl.cfa_ID = cfa.cfa_ID
+                                                    JOIN courses c ON cfa.course_code = c.course_code
+                                                    WHERE cl.cfa_ID = "%s" ''', (cour_id,))
+                                        class_data = cur.fetchall()
+                                    except Exception as e:
+                                        print(f"Error in search_class: {e}")
+                                        print(f"Error type: {type(e)}")
+                                        print(f"Error args: {e.args}")
+                                        class_combobox.set("Lỗi khi tìm kiếm")
+                                        return
+
+                                    if class_data:
+                                        class_options = {cl_code: cl_id for cl_id, cl_code in class_data}
+                                        class_combobox.config(values=list(class_options.keys()))
+                                    else:
+                                        class_options = ["No class yet"]
+                                        class_combobox.config(values=class_options)
+                                    return class_options
+                                
+                                def attendance_rp():
+                                    try:
+                                        selected_course = course_combobox.get()
+                                        selected_group = class_combobox.get()
+                                        if selected_course == "Choose Course" or selected_course == "" or selected_group == "Choose Group" or selected_group == "" or selected_group == "No class yet":
+                                            messagebox.showerror("Error", "Please select course and group!", parent=report_window)
+                                            return
+                                        
+                                        # Assuming 'attendance_folder' is the path where your Excel files are stored
+                                        attendance_folder = f'D:\\NCKH\\deepface-master\\attendance_files\\{selected_course}\\{selected_group}'
+                                        
+                                        # Get all .xlsx files in the folder
+                                        excel_files = glob.glob(os.path.join(attendance_folder, "*.xlsx"))
+
+                                        # Clear the listbox before adding new items
+                                        file_listbox.delete(0, tk.END)
+
+                                        # Check if there are any Excel files
+                                        if not excel_files:
+                                            messagebox.showinfo("Info", f"No Excel files found in folder: {attendance_folder}", parent=report_window)
+                                        else:
+                                            # Add files to the listbox with empty rows for spacing
+                                            for file in excel_files:
+                                                file_listbox.insert(tk.END, file)
+                                                file_listbox.insert(tk.END, "")  # Add an empty row for spacing
+                                        
+                                    except Exception as e:
+                                        print(f"Error: {e}")
+                                        print(f"Error type: {type(e)}")
+                                        print(f"Error args: {e.args}")
+                                        class_combobox.set("Lỗi khi tìm kiếm")
+
+                                def emotion_rp():
+                                    try:
+                                        selected_course = course_combobox.get()
+                                        selected_group = class_combobox.get()
+                                        if selected_course == "Choose Course" or selected_course == "" or selected_group == "Choose Group" or selected_group == "" or selected_group == "No class yet":
+                                            messagebox.showerror("Error", "Please select course and group!", parent=report_window)
+                                            return
+                                        
+                                        # Assuming 'attendance_folder' is the path where your Excel files are stored
+                                        emotion_folder = f'D:\\NCKH\\deepface-master\\emotion\\{selected_course}\\{selected_group}'
+                                        
+                                        # Get all .xlsx files in the folder
+                                        excel_files = glob.glob(os.path.join(emotion_folder, "*.xlsx"))
+
+                                        # Clear the listbox before adding new items
+                                        file_listbox.delete(0, tk.END)
+
+                                        # Check if there are any Excel files
+                                        if not excel_files:
+                                            messagebox.showinfo("Info", f"No Excel files found in folder: {emotion_folder}", parent=report_window)
+                                        else:
+                                            for file in excel_files:
+                                                file_listbox.insert(tk.END, file)
+                                        
+                                    except Exception as e:
+                                        print(f"Error: {e}")
+                                        print(f"Error type: {type(e)}")
+                                        print(f"Error args: {e.args}")
+                                        class_combobox.set("Search failed")
+
+                                # Function to open Excel file when double-clicked
+                                def open_excel_file(file_path):
+                                    try:
+                                        if os.name == 'nt':
+                                            os.startfile(file_path)
+                                        elif os.name == 'posix':
+                                            subprocess.call(('open', file_path))
+                                    except Exception as e:
+                                        messagebox.showerror("Error", f"Could not open the file: {e}", parent=report_window)
+
+                                # Initialize camera capture object
+                                report_window = Toplevel()
+                                report_window.title("Report")
+                                report_window.state("zoomed")
+                                report_window.configure(bg="#ccd9de")
+                                title_label = Label(report_window, text="Report", font=("times new roman", 25, "bold"), bg="#134B70", fg="#FDFFE2", bd=7, relief=GROOVE)
+                                title_label.place(x=0, y=0, relwidth=1)
+
+                                #Back button
+                                def back():
+                                    report_window.destroy()
+                                backbtn = Button(report_window, text='Back', font=('Times new Roman', 15), fg='#E7F6F2', bg='#2C3333', height=1, width=7, command=back)
+                                backbtn.place(x=1380, y=70)
+
+                                table_frame = Frame(report_window,bg = "#577B8D",borderwidth = "3", relief = SUNKEN, height = 680, width = 1150)
+                                table_frame.place(x = 175, y = 140)
+
+                                course_label = Label(table_frame, text="Courses:", bg = "#577B8D", compound=LEFT, font=("times new roman", 16, "bold")).place(x=55, y=35)
+                                course_options = search_course()
+                                course_combobox = ttk.Combobox(
+                                    table_frame, 
+                                    values=list(course_options.keys() if course_options else []), 
+                                    font=("times new roman", 13), 
+                                    background='lightgray',
+                                    width=12,
+                                    state="readonly")
+                                course_combobox.set("Choose Course")
+                                course_combobox.place(x=145, y=37)
+                                course_combobox.bind('<<ComboboxSelected>>', search_class)
+
+                                class_label = Label(table_frame, text="Classes:", bg = "#577B8D", compound=LEFT, font=("times new roman", 16, "bold")).place(x=295, y=35)
+                                class_combobox = ttk.Combobox(table_frame, font=("times new roman", 13), state="readonly",background='lightgray', width=12)
+                                class_combobox.set("Choose Group")
+                                class_combobox.place(x=385, y=37)
+
+                                attendance_rp_btn = Button(table_frame, text='Attendance Report',bg = "#40679E",fg="#FDFFE2",width=15, font = ("Times new Roman", 18 , "bold"), command=attendance_rp).place(x = 575, y = 28)
+
+                                emo_rp_btn = Button(table_frame, text = "Emotion Report",bg = "#40679E",fg="#FDFFE2",width=15 ,font = ("Times new Roman", 18 , "bold"), command=emotion_rp).place(x = 855, y = 28)
+
+                                # Listbox to display Excel file paths
+                                file_listbox = tk.Listbox(table_frame, width=113, height=25, font=("times new roman", 13)) 
+                                file_listbox.place(x=59, y=100) #x=170 width=90
+                                
+                                # Function to handle item click in the listbox
+                                def on_file_click(event):
+                                    # Get the index of the selected file
+                                    selection = file_listbox.curselection()
+                                    if selection:
+                                        file_path = file_listbox.get(selection[0])
+                                        open_excel_file(file_path)
+
+                                # Bind the listbox click event to open the file
+                                file_listbox.bind('<Double-1>', on_file_click)
+
+                            except pymysql.err.OperationalError as e:
+                                messagebox.showerror( "Error","Sql Connection Error... Open Xamp Control Panel and then start MySql Server ")
+                            except Exception as e:
+                                print(e)
+                                messagebox.showerror("Error","Close all the windows and restart your program")
+
+    ##############################################################################################################################################################
+
+    ############################################################# Function to modify account #####################################################################
+                    def instructor_accounts():
+                        conn = connect()
+                        if conn:
+                            cur = conn.cursor()
+                            try:
+                                icode = StringVar()
+                                iname = StringVar()
+                                irank = StringVar()
+                                imail = StringVar()
+                                iphone = StringVar()
+                                
+                                account_window = Toplevel()
+                                account_window.title("Account")
+                                account_window.state("zoomed")
+                                account_window.configure(bg = "#ccd9de")
+                                title_label = Label(account_window, text="Account", font=("times new roman", 25, "bold"), bg="#134B70", fg="#FDFFE2", bd=7, relief=GROOVE)
+                                title_label.place(x=0, y=0, relwidth=1)
+
+                                def back():
+                                    account_window.destroy()
+                                back_btn = Button(account_window, text="Back", font=('Times new Roman', 15), fg='#E7F6F2', bg='#2C3333', height=1, width=7, command=back)
+                                back_btn.place(x=1380, y=70)
+
+                                z = 130
+                                x1 = 70
+                                x2 = 190
+
+                                frame = Frame(account_window, bg = "#EEEEEE",borderwidth = "0", relief = SUNKEN, height = 500, width = 500)
+                                frame.place(x = 500, y = 220)
+                                logo_icon = Image.open('./img/user.png').resize((100, 100), Image.Resampling.LANCZOS)
+                                # Keep a reference to logo_img
+                                logo_img = ImageTk.PhotoImage(logo_icon, master=frame)  # type: ignore
+                                logo_label = Label(frame, image=logo_img, bd=0)
+                                logo_label.place(x=220, y=35)
+
+                                # Save the reference in the Label to prevent garbage collection
+                                logo_label.image = logo_img # type: ignore
+
+                                insCode = Label(frame, text = "Code", bg = "#EEEEEE", fg="#134B70", font = ("italic",14, "bold")).place(x = x1 , y = 40 + z )
+                                insName = Label(frame, text = "Name", bg = "#EEEEEE", fg="#134B70", font = ("italic",14, "bold")).place(x = x1, y = 85 + z)
+                                rank = Label(frame, text = "Rank", bg = "#EEEEEE", fg="#134B70", font = ("italic",14, "bold")).place(x = x1, y = 130 + z)
+                                mail = Label(frame, text = "Gmail", bg = "#EEEEEE", fg="#134B70", font = ("italic",14, "bold")).place(x = x1, y = 175 + z)
+                                phone = Label(frame, text = "Phone", bg = "#EEEEEE", fg="#134B70", font = ("italic",14, "bold")).place(x = x1, y = 220 + z)
+
+                                code = Entry(frame,state="disabled",bg = "lightgray", width = 25, textvariable = icode,  font = ("italic",12, "bold")).place(x =x2, y = 40 + z)
+                                name = Entry(frame, width = 25,bg = "lightgray", textvariable = iname , font = ("italic",12, "bold")).place(x = x2, y = 85 + z)
+                                rank = Entry(frame, state="disabled",bg = "lightgray",width = 25, textvariable = irank , font = ("italic",12, "bold")).place(x = x2, y = 130 + z)
+                                mail = Entry(frame, width = 25,bg = "lightgray", textvariable = imail,  font = ("italic",12, "bold")).place(x =x2, y = 175 + z)
+                                phone = Entry(frame, width = 25,bg = "lightgray", textvariable = iphone , font = ("italic",12, "bold")).place(x = x2, y = 220 + z)
+
+                                save_btn = Button(frame, text = "Save", bg = "#40679E",fg="#FDFFE2", height = "1", width = "8", font = ("Times new Roman", 18 , "bold")).place(x = 298, y = 410)
+
+                            except pymysql.err.OperationalError as e:
+                                messagebox.showerror( "Error","Sql Connection Error... Open Xamp Control Panel and then start MySql Server ")
+                            except Exception as e:
+                                print(e)
+                                messagebox.showerror("Error","Close all the windows and restart your program")
+                    
+                    def admin_accounts():
+                        conn = connect()
+                        if conn:
+                            cur = conn.cursor()
+                            try:
+                                acode = StringVar()
+                                aname = StringVar()
+                                arank = StringVar()
+                                amail = StringVar()
+                                aphone = StringVar()
+                                
+                                admin_window = Toplevel()
+                                admin_window.title("Account")
+                                admin_window.state("zoomed")
+                                admin_window.configure(bg = "#ccd9de")
+                                title_label = Label(admin_window, text="Account", font=("times new roman", 25, "bold"), bg="#134B70", fg="#FDFFE2", bd=7, relief=GROOVE)
+                                title_label.place(x=0, y=0, relwidth=1)
+
+                                def back():
+                                    admin_window.destroy()
+                                back_btn = Button(admin_window, text="Back", font=('Times new Roman', 15), fg='#E7F6F2', bg='#2C3333', height=1, width=7, command=back)
+                                back_btn.place(x=1380, y=70)
+
+                                z = 130
+                                x1 = 70
+                                x2 = 190
+
+                                frame = Frame(admin_window, bg = "#EEEEEE",borderwidth = "0", relief = SUNKEN, height = 450, width = 500)
+                                frame.place(x = 500, y = 220)
+                                logo_icon = Image.open('./img/admin.png').resize((100, 100), Image.Resampling.LANCZOS)
+                                # Keep a reference to logo_img
+                                logo_img = ImageTk.PhotoImage(logo_icon, master=frame)  # type: ignore
+                                logo_label = Label(frame, image=logo_img, bd=0)
+                                logo_label.place(x=220, y=35)
+
+                                # Save the reference in the Label to prevent garbage collection
+                                logo_label.image = logo_img # type: ignore
+
+                                insCode = Label(frame, text = "Code", bg = "#EEEEEE", fg="#134B70", font = ("italic",14, "bold")).place(x = x1 , y = 40 + z )
+                                insName = Label(frame, text = "Name", bg = "#EEEEEE", fg="#134B70", font = ("italic",14, "bold")).place(x = x1, y = 85 + z)
+                                mail = Label(frame, text = "Gmail", bg = "#EEEEEE", fg="#134B70", font = ("italic",14, "bold")).place(x = x1, y = 130 + z)
+                                phone = Label(frame, text = "Phone", bg = "#EEEEEE", fg="#134B70", font = ("italic",14, "bold")).place(x = x1, y = 175 + z)
+
+                                code = Entry(frame,state="disabled",bg = "lightgray", width = 25, textvariable = acode,  font = ("italic",12, "bold")).place(x =x2, y = 40 + z)
+                                name = Entry(frame, width = 25,bg = "lightgray", textvariable = aname , font = ("italic",12, "bold")).place(x = x2, y = 85 + z)
+                                mail = Entry(frame, state="disabled",bg = "lightgray",width = 25, textvariable = amail , font = ("italic",12, "bold")).place(x = x2, y = 130 + z)
+                                phone = Entry(frame, width = 25,bg = "lightgray", textvariable = aphone,  font = ("italic",12, "bold")).place(x =x2, y = 175 + z)
+
+                                save_btn = Button(frame, text = "Save", bg = "#40679E",fg="#FDFFE2", height = "1", width = "8", font = ("Times new Roman", 18 , "bold")).place(x = 298, y = 360)
+
+                            except pymysql.err.OperationalError as e:
+                                messagebox.showerror( "Error","Sql Connection Error... Open Xamp Control Panel and then start MySql Server ", parent = admin_window)
+                            except Exception as e:
+                                print(e)
+                                messagebox.showerror("Error","Close all the windows and restart your program", parent = admin_window)
 
     ##############################################################################################################################################################
 
@@ -1691,6 +2180,7 @@ def login():
                         ques = messagebox.askyesnocancel("Notification","Do you really want to exit?", parent = window)
                         if (ques == True):
                             window.destroy()
+    
     ##############################################################################################################################################################
 
                     ##### GUI for the main page #####
@@ -1701,55 +2191,62 @@ def login():
                     lbl = tk.Label(window, text="Facial Recognition Based Automatic Attendance and Emotion Analysis System ", bg="#ccd9de" , fg="#134B70" , width=70 , height=2, font=('times', 25, 'italic bold')) 
                     lbl.place(x=85, y=40)
 
+                    window_width = window.winfo_screenwidth()
+                    button_width = 275
+                    horizontal_gap = (window_width - 3 * button_width) / 4
+                    x1 = horizontal_gap
+                    x2 = 2 * horizontal_gap + button_width
+                    x3 = 3 * horizontal_gap + 2 * button_width
+
                     if role_id==2: # Instructor
-                        gallery_img = ImageTk.PhotoImage(Image.open('./img/gallery.png').resize((180, 170), Image.LANCZOS))
-                        gallery_btn = Button(window, image = gallery_img, text = "Photo Samples",font = ("Times New Roman" , 16), fg = "#344C64", height =230, width = 255, compound = BOTTOM, command=photo_samples) 
-                        gallery_btn.place(x = 105, y = 200)
+                        attendance_img = ImageTk.PhotoImage((Image.open('./img/attendance.png')).resize((190, 180), Image.LANCZOS))
+                        recognize_btn = Button(window , image = attendance_img , text = "Face Recognition" , font = ("Times new roman", 16), fg = "#344C64" , height = 250, width= 275 , compound = BOTTOM, command=face_recognize) 
+                        recognize_btn.place(x = x1, y = 200)
 
-                        attendance_img = ImageTk.PhotoImage((Image.open('./img/attendance.png')).resize((170, 160), Image.LANCZOS))
-                        recognize_btn = Button(window , image = attendance_img , text = "Face Recognition" , font = ("Times new roman", 16), fg = "#344C64" , height = 230, width= 235 , compound = BOTTOM, command=face_recognize) 
-                        recognize_btn.place(x = 445, y = 200)
+                        emotion_img = ImageTk.PhotoImage(Image.open('./img/emo.png').resize((190, 180), Image.LANCZOS))
+                        emotion_btn = Button(window, image = emotion_img , text = "Emotion Analysis", font = ("Times new roman", 16), fg = "#344C64", height = 250, width= 275, compound = BOTTOM, command=Emotion_Analysis)
+                        emotion_btn.place(x = x2, y = 200)
 
-                        emotion_img = ImageTk.PhotoImage(Image.open('./img/emo.png').resize((170, 160), Image.LANCZOS))
-                        emotion_btn = Button(window, image = emotion_img , text = "Emotion Analysis", font = ("Times new roman", 16), fg = "#344C64", height = 230, width= 255, compound = BOTTOM, command=Emotion_Analysis)
-                        emotion_btn.place(x = 785, y = 200)
+                        report_img = ImageTk.PhotoImage(Image.open('./img/report.png').resize((190, 180), Image.LANCZOS))
+                        report_btn = Button(window, image = report_img , text = "Attendance Report", font = ("Times new roman", 16), fg = "#344C64", height = 250, width= 275, compound = BOTTOM, command=reports) 
+                        report_btn.place(x = x3, y = 200)
 
-                        report_img = ImageTk.PhotoImage(Image.open('./img/report.png').resize((170, 160), Image.LANCZOS))
-                        report_btn = Button(window, image = report_img , text = "Attendance Report", font = ("Times new roman", 16), fg = "#344C64", height = 230, width= 255, compound = BOTTOM ) 
-                        report_btn.place(x = 105, y = 520)
+                        gallery_img = ImageTk.PhotoImage(Image.open('./img/gallery.png').resize((190, 180), Image.LANCZOS))
+                        gallery_btn = Button(window, image = gallery_img, text = "Photo Samples",font = ("Times New Roman" , 16), fg = "#344C64", height =250, width = 275, compound = BOTTOM, command=photo_samples) 
+                        gallery_btn.place(x = x1, y = 520)
 
-                        admin_img = ImageTk.PhotoImage(Image.open('./img/admin.png').resize((170, 160), Image.LANCZOS))
-                        account_btn = Button(window, image = admin_img , text = "Admin Account", font = ("Times new roman", 16), fg = "#344C64", height = 230, width= 255, compound = BOTTOM ) 
-                        account_btn.place(x = 445, y = 520)
+                        admin_img = ImageTk.PhotoImage(Image.open('./img/admin.png').resize((190, 180), Image.LANCZOS))
+                        account_btn = Button(window, image = admin_img , text = "Admin Account", font = ("Times new roman", 16), fg = "#344C64", height = 250, width= 275, compound = BOTTOM, command=instructor_accounts) 
+                        account_btn.place(x = x2, y = 520)
 
-                        logout_img = ImageTk.PhotoImage(Image.open('./img/logout.png').resize((170, 160), Image.LANCZOS))
-                        logout_btn = Button(window, image = logout_img , text = "Logout", font = ("Times new roman", 16), fg = "#344C64", height = 230, width= 255, compound = BOTTOM, command=logout) 
-                        logout_btn.place(x = 785, y = 520)
+                        logout_img = ImageTk.PhotoImage(Image.open('./img/logout.png').resize((190, 180), Image.LANCZOS))
+                        logout_btn = Button(window, image = logout_img , text = "Logout", font = ("Times new roman", 16), fg = "#344C64", height = 250, width= 275, compound = BOTTOM, command=logout) 
+                        logout_btn.place(x = x3, y = 520)
 
                     elif role_id == 3:  # Admin
-                        excel_img = ImageTk.PhotoImage(Image.open('./img/excel.png').resize((170, 170), Image.LANCZOS))
-                        import_btn = Button(window, image = excel_img, text = "Import Data",font = ("Times New Roman" , 16), fg = "#344C64", height =230, width = 255, compound = BOTTOM,command=import_data)
-                        import_btn.place(x = 105, y = 200)
+                        excel_img = ImageTk.PhotoImage(Image.open('./img/excel.png').resize((190, 180), Image.LANCZOS))
+                        import_btn = Button(window, image = excel_img, text = "Import Data",font = ("Times New Roman" , 16), fg = "#344C64", height =250, width = 275, compound = BOTTOM,command=import_data)
+                        import_btn.place(x = x1, y = 200)
                     
-                        database_img = ImageTk.PhotoImage(Image.open('./img/add-database.png').resize((180, 170), Image.LANCZOS))
-                        create_btn = Button(window, image = database_img, text = "Create Class",font = ("Times New Roman" , 16), fg = "#344C64", height =230, width = 255, compound = BOTTOM, command=create_class)
-                        create_btn.place(x = 445, y = 200)
+                        database_img = ImageTk.PhotoImage(Image.open('./img/add-database.png').resize((190, 180), Image.LANCZOS))
+                        create_btn = Button(window, image = database_img, text = "Create Class",font = ("Times New Roman" , 16), fg = "#344C64", height =250, width = 275, compound = BOTTOM, command=create_class)
+                        create_btn.place(x = x2, y = 200)
                     
-                        collect_img = ImageTk.PhotoImage(Image.open('./img/collect.png').resize((180, 170), Image.LANCZOS))
-                        collect_btn = Button(window, image = collect_img, text = "Collect Dataset",font = ("Times New Roman" , 16), fg = "#344C64", height =230, width = 255, compound = BOTTOM, command=collect_dataset) 
-                        collect_btn.place(x = 785, y = 200)
+                        collect_img = ImageTk.PhotoImage(Image.open('./img/collect.png').resize((190, 180), Image.LANCZOS))
+                        collect_btn = Button(window, image = collect_img, text = "Collect Dataset",font = ("Times New Roman" , 16), fg = "#344C64", height =250, width = 275, compound = BOTTOM, command=collect_dataset) 
+                        collect_btn.place(x = x3, y = 200)
 
-                        gallery_img = ImageTk.PhotoImage(Image.open('./img/gallery.png').resize((180, 170), Image.LANCZOS))
-                        gallery_btn = Button(window, image = gallery_img, text = "Photo Samples",font = ("Times New Roman" , 16), fg = "#344C64", height =230, width = 255, compound = BOTTOM, command=photo_samples) 
-                        gallery_btn.place(x = 105, y = 520)
+                        gallery_img = ImageTk.PhotoImage(Image.open('./img/gallery.png').resize((190, 180), Image.LANCZOS))
+                        gallery_btn = Button(window, image = gallery_img, text = "Photo Samples",font = ("Times New Roman" , 16), fg = "#344C64", height =250, width = 275, compound = BOTTOM, command=photo_samples) 
+                        gallery_btn.place(x = x1, y = 520)
 
-                        admin_img = ImageTk.PhotoImage(Image.open('./img/admin.png').resize((170, 160), Image.LANCZOS))
-                        account_btn = Button(window, image = admin_img , text = "Admin Account", font = ("Times new roman", 16), fg = "#344C64", height = 230, width= 255, compound = BOTTOM ) 
-                        account_btn.place(x = 445, y = 520)
+                        admin_img = ImageTk.PhotoImage(Image.open('./img/admin.png').resize((190, 180), Image.LANCZOS))
+                        account_btn = Button(window, image = admin_img , text = "Admin Account", font = ("Times new roman", 16), fg = "#344C64", height = 250, width= 275, compound = BOTTOM, command=admin_accounts) 
+                        account_btn.place(x = x2, y = 520)
 
-                        logout_img = ImageTk.PhotoImage(Image.open('./img/logout.png').resize((170, 160), Image.LANCZOS))
-                        logout_btn = Button(window, image = logout_img , text = "Logout", font = ("Times new roman", 16), fg = "#344C64", height = 230, width= 255, compound = BOTTOM, command=logout) 
-                        logout_btn.place(x = 785, y = 520)
+                        logout_img = ImageTk.PhotoImage(Image.open('./img/logout.png').resize((190, 180), Image.LANCZOS))
+                        logout_btn = Button(window, image = logout_img , text = "Logout", font = ("Times new roman", 16), fg = "#344C64", height = 250, width= 275, compound = BOTTOM, command=logout) 
+                        logout_btn.place(x = x3, y = 520)
 
                     def exit(event=None):
                         window.destroy()
