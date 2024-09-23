@@ -965,7 +965,7 @@ def login():
                                                 mail = smail_var.get()
                                                 name = sname_var.get()
                                                 sclass = sclass_var.get()
-                                                regex = '^[a-zA-Z]+[Bb]\d{7}@student\.ctu\.edu\.vn'
+                                                regex = r'^[a-zA-Z]+[Bb]\d{7}@student\.ctu\.edu\.vn'
                                                 if(re.search(regex, mail)):
                                                     cur.execute("update students set st_fullName = %s, st_email = %s, cl_className = %s where st_code = %s",(name, mail, sclass,code))
                                                     conn.commit()
@@ -1610,27 +1610,14 @@ def login():
                                             messagebox.showerror("Error", "Please select both a course and a group!", parent=Emotion_Analysis_window)
                                             return
                                         
-                                        # Create directory for emo files if not exist
-                                        directory = 'emotion'
-                                        dir_course = f'emotion/{course_code}'
-                                        dir_group = f'emotion/{course_code}/{group_code}'
-                                        src_dir = f'{dir_group}/images'
-                                        des_dir = f'{dir_group}/results'
-                                        if not os.path.exists(directory):
-                                            os.makedirs(directory)
-                                        elif not os.path.exists(dir_course):
-                                            os.makedirs(dir_course)
-                                        elif not os.path.exists(dir_group):
-                                            os.makedirs(dir_group)
-                                        elif not os.path.exists(src_dir):
-                                            os.makedirs(src_dir)
-                                        elif not os.path.exists(des_dir):
-                                            os.makedirs(des_dir)
-
-                                        # Generate a timestamped filename for the Excel file
-                                        date_att = datetime.now().strftime('%d-%m-%Y')
-                                        file_name = f'{course_code}_{group_code}_{date_att}.xlsx'
-                                        file_path = os.path.join(dir_group, file_name)
+                                        date = datetime.now().strftime('%d-%m-%Y')
+                                        base_dir = "emotion"
+                                        date = datetime.now().strftime("%d-%m-%Y")
+                                        path = os.path.join(base_dir, course_code, group_code, date)
+                                        src_dir = os.path.join(path, 'images')
+                                        des_dir = os.path.join(path, 'results')
+                                        file_name = f'{course_code}_{group_code}_{date}.xlsx'
+                                        file_path = os.path.join(path, file_name)
 
                                         # Create a new Excel file and populate it with the course and group information
                                         workbook = openpyxl.Workbook()
@@ -1639,7 +1626,7 @@ def login():
                                             sheet.title = "Sheet"
                                             sheet['A1'] = course_code
                                             sheet['B1'] = group_code
-                                            sheet['C1'] = date_att
+                                            sheet['C1'] = date
                                             sheet['A2'] = 'Emotion'
                                             sheet['B2'] = 'Time'
                                             sheet['C2'] = 'Date'
@@ -1735,25 +1722,26 @@ def login():
                                         print("Error: Cannot open camera")
                                         return
                                     
-                                    # Create directory for emo files if not exist
-                                    directory = 'emotion'
-                                    dir_course = f'emotion/{course_code}'
-                                    dir_group = f'emotion/{course_code}/{group_code}'
-                                    src_dir = f'{dir_group}/images'
-                                    des_dir = f'{dir_group}/results'
+                                    # Set up the folder structure variables
+                                    base_dir = "emotion"
+                                    date_folder = datetime.now().strftime("%d-%m-%Y")  # Use the current date in "DD-MM-YYYY" format
 
-                                    # Check and create directories if they don't exist
-                                    if not os.path.exists(directory):
-                                        os.makedirs(directory)
-                                    if not os.path.exists(dir_course):
-                                        os.makedirs(dir_course)
-                                    if not os.path.exists(dir_group):
-                                        os.makedirs(dir_group)
-                                    if not os.path.exists(src_dir):
-                                        os.makedirs(src_dir)
-                                    if not os.path.exists(des_dir):
-                                        os.makedirs(des_dir)
-                                
+                                    # Define the full path to create
+                                    path_to_create = os.path.join(base_dir, course_code, group_code, date_folder)
+
+                                    # Define the subfolders to be created within the date folder
+                                    subfolders = ['images', 'results']
+
+                                    # Create the base directory structure
+                                    os.makedirs(path_to_create, exist_ok=True)
+
+                                    # Create the subfolders inside the date folder
+                                    for subfolder in subfolders:
+                                        os.makedirs(os.path.join(path_to_create, subfolder), exist_ok=True)
+
+                                    print(f"Directory structure created successfully at: {path_to_create}")
+                                    src_dir = os.path.join(path_to_create, 'images')
+
                                     # Làm tròn lên để đảm bảo chụp đủ số lần trong thời gian quy định
                                     total_images = total_duration_minutes // interval_minutes
                                     count = 0  # Đếm số lượng ảnh đã chụp
@@ -1782,7 +1770,7 @@ def login():
                                     finally:
                                         cap.release()
                                         cv2.destroyAllWindows()
-                                        messagebox.showinfo("Done","All photos are collected! Ready for analyze...", parent = Emotion_Analysis_window)
+                                        messagebox.showinfo("Done","All photos are collected! Ready for analyze", parent = Emotion_Analysis_window)
                                         print("Camera closed and program ended.")
 
                                 # Create a button
