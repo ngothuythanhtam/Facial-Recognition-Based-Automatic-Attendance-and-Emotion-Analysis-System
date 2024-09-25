@@ -236,7 +236,6 @@ def login():
                                         conn.rollback()
                                     
                                 ##### Import data to the 'studying' table in MySQL #####
-                                
                                 def import_studying():
                                     try:
                                         paths = StringVar()
@@ -330,7 +329,7 @@ def login():
                                                 print(f"Error in search_class: {e}")
                                                 print(f"Error type: {type(e)}")
                                                 print(f"Error args: {e.args}")
-                                                class_combobox.set("Lỗi khi tìm kiếm")
+                                                class_combobox.set("Finding fail")
                                                 return
 
                                             if class_data:
@@ -1306,7 +1305,7 @@ def login():
                                         print(f"Error in search_class: {e}")
                                         print(f"Error type: {type(e)}")
                                         print(f"Error args: {e.args}")
-                                        class_combobox.set("Finding fail")
+                                        class_combobox.set("Lỗi khi tìm kiếm")
                                         return
 
                                     if class_data:
@@ -1335,44 +1334,30 @@ def login():
                                             print(f"teached by instructor: {instructor_name}")
                                         else:
                                             print("Instructor name not found")
-
+                                        
                                         # Create a directory to store the attendance files
                                         directory = 'attendance_files'
-                                        dir_course = f'attendance_files/{course_code}'
-                                        dir_group = f'attendance_files/{course_code}/{group_code}'
-
-                                        # Check and create directories if they don't exist
                                         if not os.path.exists(directory):
-                                            messagebox.showerror("Fail", f"No folder {directory}")
-                                        if not os.path.exists(dir_course):
-                                            messagebox.showerror("Fail", f"No folder {dir_course}")
-                                        if not os.path.exists(dir_group):
-                                            messagebox.showerror("Fail", f"No folder {dir_group}")
+                                            os.makedirs(directory)
 
                                         # Generate a timestamped filename
                                         date_att = datetime.now().strftime('%d-%m-%Y')
                                         file_name = f'{course_code}_{group_code}_{date_att}.xlsx'
-                                        file_path = os.path.join(dir_group, file_name)
+                                        file_path = os.path.join(directory, file_name)
 
                                         # Create a new Excel file
                                         workbook = openpyxl.Workbook()
                                         sheet = workbook.active
                                         if sheet is not None:
                                             sheet.title = "Sheet"
-                                            sheet['A1'] = "Course"
-                                            sheet['B1'] = "Group"
-                                            sheet['C1'] = "Date"
-                                            sheet['D1'] = "Lecturer Code"
-                                            sheet['E1'] = "Lecturer Name"
-                                            sheet['A2'] = course_code
-                                            sheet['B2'] = group_code
-                                            sheet['C2'] = date_att
-                                            sheet['D2'] = ins_Code
-                                            sheet['E2'] = instructor_name
-                                            sheet['A3'] = 'Student'
-                                            sheet['B3'] = 'Time'
-                                            sheet['C3'] = 'Date'
-                                        
+                                            sheet['A1'] = course_code
+                                            sheet['B1'] = group_code
+                                            sheet['C1'] = date_att
+                                            sheet['D1'] = ins_Code
+                                            sheet['E1'] = instructor_name
+                                            sheet['A2'] = 'Student'
+                                            sheet['B2'] = 'Time'
+                                            sheet['C2'] = 'Date'
                                         workbook.save(file_path)
 
                                         # Check if the JSON file exists, create if it doesn't
@@ -1387,38 +1372,31 @@ def login():
                                             json_file.seek(0)
                                             json.dump(data, json_file, indent=4)
 
+                                        # Update JSON file with the new file path
+                                        # data = {"attendance_file_path": file_path}
+                                        # with open(json_path, 'w') as json_file:
+                                        #     json.dump(data, json_file)
                                         print(f"New Excel file created at {file_path} and JSON updated.")
                                         return file_path
                                     
                                     except Exception as e:
                                         print(f"Error creating Excel file or updating JSON: {str(e)}")
                                         messagebox.showerror("Error", f"Error creating Excel file or updating JSON: {str(e)}")
-
+                                
                                 def import_excel():
                                     try:
                                         file_path = get_excel()
                                         if not file_path:
-                                            messagebox.showerror("Error", "Excel file not found or course/group not selected.", parent=main_frame)
+                                            messagebox.showinfo("Thông báo", "Không tìm thấy file Excel hoặc chưa chọn khóa học/nhóm.", parent=main_frame)
                                             return
 
                                         def get_class(event=None):
                                             global cl_ID
                                             try:
-                                                class_options = search_class()  # Assuming this returns a list of class names or IDs
-                                                selected_class = class_combobox.get()
-
-                                                if class_options is None:
-                                                    print("class_options is None")
-                                                    return
-
-                                                # Check if the selected class is in the class_options list
-                                                if selected_class in class_options:
-                                                    # Get the index or the value of the selected class from the list
-                                                    cl_ID = selected_class  # Assuming the selected class itself is the ID
-                                                    print(f"cour_id: {cl_ID}")
-                                                else:
-                                                    raise ValueError("Selected class not found in options.")
-
+                                                class_options = search_class()
+                                                cl_ID = class_options.get(class_combobox.get()) # type: ignore
+                                                if not cl_ID:
+                                                    raise ValueError("Invalid Class ID")
                                                 print(f"class_id_get_class: {cl_ID}")
                                             except Exception as e:
                                                 print(f"Error in get_class: {e}")
@@ -1433,9 +1411,10 @@ def login():
                                             print(f"class_id_execute: {cl_ID}")
 
                                             try:
-                                                df = pd.read_excel(file_path, sheet_name='Sheet')
+                                                df = pd.read_excel(file_path, sheet_name='Sheet', skiprows=2)
                                                 if df.empty:
                                                     raise ValueError("Empty Excel File")
+                                                
                                                 
                                                 # Reset index sau khi xóa hàng
                                                 df = df.reset_index(drop=True)
@@ -1472,37 +1451,30 @@ def login():
                                     except Exception as e:
                                         messagebox.showerror("Error", f"An error occurred: {e}", parent=main_frame)
                                         conn.rollback()
-                
+
                                 def mark_attendance():
                                     """
                                     This function handles the creation of a new Excel file with the course and group data
                                     and updates the JSON file with the new Excel file path.
                                     """
-                                    
                                     course_code = course_combobox.get()
                                     group_code = class_combobox.get()
-                                    if course_code == "Choose Course":
-                                        messagebox.showerror("Error", "Please select a course!", parent=face_window)
-                                    elif group_code == "Choose Group":
-                                        messagebox.showerror("Error", "Please select a group!", parent=face_window)
-                                    elif group_code == "No class yet":
-                                        messagebox.showerror("Error", f"Group does not exist. Please contact admin for help!", parent=face_window)
-                                    else:
-                                        # Update the Excel file path in JSON and save course and group data
-                                        excel_file_path = update_json_with_excel_path(course_code, group_code)
 
-                                        # Continue with face recognition stream (or any other action)
-                                        face_analysis.stream(
-                                            db_path="face-db",
-                                            enable_face_analysis=False,
-                                            model_name="ArcFace",
-                                            detector_backend="retinaface",
-                                            anti_spoofing=False,
-                                            source=0,
-                                        )
-                                        messagebox.showinfo("Done", "Camera is closed!", parent=face_window)
-                                        course_combobox.set("Choose Course")
-                                        class_combobox.set("Choose Group") # sửa thêm trường hợp chọn m04 cho ct054h sau khi chọn 051h
+                                    if course_code == "Choose Course" or course_code == "" or group_code == "Choose Group" or group_code == "":
+                                        messagebox.showerror("Error", "Please select both a course and a group!", parent = face_window)
+                                        return
+                                    # Update the Excel file path in JSON and save course and group data
+                                    excel_file_path = update_json_with_excel_path(course_code, group_code)
+
+                                    # Continue with face recognition stream (or any other action)
+                                    face_analysis.stream(
+                                        db_path="../face-db",
+                                        enable_face_analysis=False,
+                                        model_name="ArcFace",
+                                        detector_backend="retinaface",
+                                        anti_spoofing=False,
+                                        source=0,
+                                    )
 
                                 def get_excel():
                                     """
@@ -1511,14 +1483,20 @@ def login():
                                         str: The path of the Excel file if found, otherwise None.
                                     """
                                     try:
+                                        # Lấy mã khóa học và mã nhóm từ combobox
                                         course_code = course_combobox.get()
                                         group_code = class_combobox.get()
+
+                                        # Kiểm tra các điều kiện đầu vào
                                         if course_code == "Choose Course":
-                                            messagebox.showerror("Error", "Please select a course!", parent=face_window)
+                                            print("Error: Please select a course!")
+                                            return None
                                         elif group_code == "Choose Group":
-                                            messagebox.showerror("Error", "Please select a group!", parent=face_window)
+                                            print("Error: Please select a group!")
+                                            return None
                                         elif group_code == "No class yet":
-                                            messagebox.showerror("Error", f"Group does not exist. Please contact admin for help!", parent=face_window)
+                                            print("Error: Group does not exist. Please contact admin for help!")
+                                            return None
                                         else:
                                             dir_course = f'attendance_files/{course_code}'
                                             dir_group = f'{dir_course}/{group_code}'
@@ -1527,13 +1505,16 @@ def login():
                                             file_name = f'{course_code}_{group_code}_{date_att}.xlsx'
                                             file_path = os.path.join(dir_group, file_name)
 
-                                            if not os.path.exists(file_name):
-                                                messagebox.showerror(f"Error: Cannot find {file_name}", parent=face_window)
+
+                                            # Kiểm tra sự tồn tại của file
+                                            if not os.path.exists(file_path):
+                                                print(f"Error: Cannot find {file_name}")
                                                 return None
                                             else:
-                                                messagebox.showinfo("Success",f'File {file_name} located at: {file_path}', parent=face_window)
+                                                # Trả về đường dẫn của file nếu tìm thấy
+                                                print(f"Success: {file_name} found at {file_path}")
                                                 return file_path
-                                    
+                                
                                     except Exception as e:
                                         print(f"Error finding Excel file: {str(e)}")
                                         messagebox.showerror("Error", f"Error finding Excel file: {str(e)}", parent=face_window)
@@ -1602,7 +1583,7 @@ def login():
                             except Exception as e:
                                 print(e)
                                 messagebox.showerror("Error", "Close all the windows and restart your program")
-    
+
     ##############################################################################################################################################################
 
     ######################################################### Function to analyze emotion ########################################################################
