@@ -23,6 +23,8 @@ create table instructor (
     ins_name varchar(255) not null,
     ins_academicRank varchar(255) default null
 );
+insert into instructor (ins_instructorCode, ins_name, ins_academicRank) value (1229, 'Phạm Thế Phi', 'PhD'); 
+select ins_name from instructor where ins_instructorCode = '1229';
 
 -- Sinh Viên
 create table students (
@@ -52,6 +54,8 @@ create table roles (
 	role_ID int primary key,
     role_name varchar(255)
 );
+insert into roles values (1, 'Students'), (2, 'Instructors'), (3, 'Administrators');
+
 
 -- Tài Khoản
 create table accounts (
@@ -61,7 +65,11 @@ create table accounts (
     role_ID int,
     foreign key (role_ID) references roles (role_ID)
 );
-
+insert into accounts (acc_username, acc_password, role_ID)
+value ('admin', 'admin', 3);
+insert into accounts (acc_username, acc_password, role_ID)
+value ('1229', '1', 2);
+select * from accounts;
 -- Năm Học
 create table years (
     ay_schoolYear varchar(255) not null primary key
@@ -146,6 +154,10 @@ create table studying (
     foreign key (clCourse_ID) references classCourse (clCourse_ID),
     primary key (st_code, clCourse_ID)
 );
+insert into studying values ('B2105709', 11);
+insert into studying values ('B2111949', 11);
+insert into studying values ('B2105709', 8);
+insert into studying values ('B2111949', 8);
 select * from studying;
 
 CREATE TABLE attendance (
@@ -161,8 +173,16 @@ CREATE TABLE attendance (
 );
 select * from attendance;
 
-insert into attendance values ('', "B2111949", 5,current_date(), curtime());
-
+CREATE TABLE emotion (
+    emo_ID INT AUTO_INCREMENT,
+    emo_fromCourse_ID INT,
+    emo_name VARCHAR(50),
+    emo_session_date DATE,
+    emo_time_status TIME,
+    FOREIGN KEY (emo_fromCourse_ID) 
+        REFERENCES studying (clCourse_ID),
+    PRIMARY KEY (emo_ID)
+);
 -- TESTING 
 -- insert
 insert into years (ay_schoolYear)
@@ -204,7 +224,6 @@ insert into class (cl_className, maj_Code) values
  ('DI21V7F3', '7480201C'),
  ('DI21V7F4', '7480201C');
  
- insert into roles values(1, 'teacher'),(2,'student');
 
 insert into administrator(ad_code, ad_name, ad_phoneNumber, ad_pass) values('1','Thanh Tam', '0123456789','1');
 select * from administrator;
@@ -221,9 +240,20 @@ select * from studying;
 select * from students;
 select * from accounts;
 select * from roles;
+drop table roles;
 drop table accounts;
 select * from attendance;
 select * from semester;
+select * from administrator;
+select * from instructor;
+select * from emotion;
+
+alter table instructor add ins_gmail varchar(255) default null;
+alter table instructor add constraint ins_mail_ad unique (ins_gmail);
+alter table instructor add ins_phone_number varchar(12) default null; 
+alter table instructor add constraint ins_phone_uni unique (ins_phone_number);
+alter table administrator add ad_gmail varchar(255) default null;
+alter table administrator add constraint uni_mail_ad unique (ad_gmail);
 
 select c.clCourse_code, cfa.course_code, s.st_code from classcourse c 
 	join coursefollowacayear cfa on c.cfa_ID = cfa.cfa_ID
@@ -236,3 +266,5 @@ join courses c on c.course_code = cfa.course_code;
 
 SELECT * from coursefollowacayear ;
 insert into classcourse values("", "M01","21", '44');
+select acc_username, acc_password, role_ID from accounts 
+where acc_username = '1129' and acc_password = 'admin';
