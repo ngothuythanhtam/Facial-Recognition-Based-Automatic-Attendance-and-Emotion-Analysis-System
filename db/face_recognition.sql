@@ -178,6 +178,19 @@ select * from attendance;
 
 insert into attendance values ('', "B2111949", 5,current_date(), curtime());
 
+CREATE TABLE emotion (
+    emo_ID INT AUTO_INCREMENT,
+    emo_fromCourse_ID int,
+    emo_name varchar(50),
+    emo_session_date DATE,
+    emo_time_status TIME,
+    FOREIGN KEY (emo_fromCourse_ID) 
+        REFERENCES studying (clCourse_ID),
+    PRIMARY KEY (emo_ID)
+);
+
+select * from emotion;
+
 -- TESTING 
 -- insert
 insert into years (ay_schoolYear)
