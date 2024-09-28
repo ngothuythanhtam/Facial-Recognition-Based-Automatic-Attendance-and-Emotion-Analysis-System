@@ -1335,29 +1335,33 @@ def login():
                                         else:
                                             print("Instructor name not found")
                                         
-                                        # Create a directory to store the attendance files
-                                        directory = 'attendance_files'
-                                        if not os.path.exists(directory):
-                                            os.makedirs(directory)
+                                        # The directory to store the attendance files
+                                        base_dir = "attendance_files"
+                                        group_path = os.path.join(base_dir, course_code, group_code)
 
                                         # Generate a timestamped filename
                                         date_att = datetime.now().strftime('%d-%m-%Y')
                                         file_name = f'{course_code}_{group_code}_{date_att}.xlsx'
-                                        file_path = os.path.join(directory, file_name)
+                                        file_path = os.path.join(group_path, file_name)
 
-                                        # Create a new Excel file
+                                         # Create a new Excel file
                                         workbook = openpyxl.Workbook()
                                         sheet = workbook.active
                                         if sheet is not None:
                                             sheet.title = "Sheet"
-                                            sheet['A1'] = course_code
-                                            sheet['B1'] = group_code
-                                            sheet['C1'] = date_att
-                                            sheet['D1'] = ins_Code
-                                            sheet['E1'] = instructor_name
-                                            sheet['A2'] = 'Student'
-                                            sheet['B2'] = 'Time'
-                                            sheet['C2'] = 'Date'
+                                            sheet['A1'] = 'Course'
+                                            sheet['B1'] = 'Group'
+                                            sheet['C1'] = 'Date'
+                                            sheet['D1'] = 'Lecturer Code'
+                                            sheet['E1'] = 'Lecturer Name'
+                                            sheet['A2'] = course_code
+                                            sheet['B2'] = group_code
+                                            sheet['C2'] = date_att
+                                            sheet['D2'] = ins_Code
+                                            sheet['E2'] = instructor_name
+                                            sheet['A3'] = 'Student'
+                                            sheet['B3'] = 'Time'
+                                            sheet['C3'] = 'Date'
                                         workbook.save(file_path)
 
                                         # Check if the JSON file exists, create if it doesn't
@@ -1372,10 +1376,6 @@ def login():
                                             json_file.seek(0)
                                             json.dump(data, json_file, indent=4)
 
-                                        # Update JSON file with the new file path
-                                        # data = {"attendance_file_path": file_path}
-                                        # with open(json_path, 'w') as json_file:
-                                        #     json.dump(data, json_file)
                                         print(f"New Excel file created at {file_path} and JSON updated.")
                                         return file_path
                                     
@@ -1387,7 +1387,7 @@ def login():
                                     try:
                                         file_path = get_excel()
                                         if not file_path:
-                                            messagebox.showinfo("Thông báo", "Không tìm thấy file Excel hoặc chưa chọn khóa học/nhóm.", parent=main_frame)
+                                            messagebox.showerror("Error", "File Excel not found!.", parent=main_frame)
                                             return
 
                                         def get_class(event=None):
@@ -1463,12 +1463,18 @@ def login():
                                     if course_code == "Choose Course" or course_code == "" or group_code == "Choose Group" or group_code == "":
                                         messagebox.showerror("Error", "Please select both a course and a group!", parent = face_window)
                                         return
+                                    
+                                    base_dir = "attendance_files"
+                                    group_path = os.path.join(base_dir, course_code, group_code)
+
+                                    if not os.path.exists(group_path):
+                                        os.makedirs(group_path)
                                     # Update the Excel file path in JSON and save course and group data
                                     excel_file_path = update_json_with_excel_path(course_code, group_code)
 
                                     # Continue with face recognition stream (or any other action)
                                     face_analysis.stream(
-                                        db_path="../face-db",
+                                        db_path="./face-db",
                                         enable_face_analysis=False,
                                         model_name="ArcFace",
                                         detector_backend="retinaface",
@@ -1648,7 +1654,7 @@ def login():
                                         print(f"New Excel file created at {file_path} and JSON updated.")
 
                                         # Proceed with face recognition or other tasks
-                                        db_path = "face-db"
+                                        db_path = "./face-db"
                                         source_path = src_dir
                                         dest_path = des_dir
                                         face_analysis.fromfiles(
@@ -1796,7 +1802,7 @@ def login():
                                     try:
                                         file_path = get_excel()
                                         if not file_path:
-                                            messagebox.showinfo("Thông báo", "Không tìm thấy file Excel hoặc chưa chọn khóa học/nhóm.", parent=main_frame)
+                                            messagebox.showerror("Error", "File excel not found!", parent=main_frame)
                                             return
 
                                         def get_class(event=None):
@@ -2036,8 +2042,10 @@ def login():
                                             messagebox.showerror("Error", "Please select course and group!", parent=report_window)
                                             return
                                         
+                                        base_dir = "attendance_files"
+                                        group_path = os.path.join(base_dir, selected_course, selected_group)
                                         # Assuming 'attendance_folder' is the path where your Excel files are stored
-                                        attendance_folder = f'D:\\NCKH\\deepface-master\\attendance_files\\{selected_course}\\{selected_group}'
+                                        attendance_folder = f'{group_path}'
                                         
                                         # Get all .xlsx files in the folder
                                         excel_files = glob.glob(os.path.join(attendance_folder, "*.xlsx"))
@@ -2053,7 +2061,7 @@ def login():
                                             for file in excel_files:
                                                 file_listbox.insert(tk.END, file)
                                                 file_listbox.insert(tk.END, "")  # Add an empty row for spacing
-                                        
+                                
                                     except Exception as e:
                                         print(f"Error: {e}")
                                         print(f"Error type: {type(e)}")
@@ -2068,21 +2076,20 @@ def login():
                                             messagebox.showerror("Error", "Please select course and group!", parent=report_window)
                                             return
                                         
-                                        date = datetime.now().strftime('%d-%m-%Y')
                                         base_dir = "emotion"
                                         group_path = os.path.join(base_dir, selected_course, selected_group)
-                                        file_name = f'{selected_course}_{selected_group}_{date}.xlsx'
-                                        emotion_report = os.path.join(group_path, file_name)
-
+                                        # Assuming 'attendance_folder' is the path where your Excel files are stored
+                                        emotion_folder = f'{group_path}'
+                                        
                                         # Get all .xlsx files in the folder
-                                        excel_files = glob.glob(os.path.join(group_path, "*.xlsx"))
+                                        excel_files = glob.glob(os.path.join(emotion_folder, "*.xlsx"))
 
                                         # Clear the listbox before adding new items
                                         file_listbox.delete(0, tk.END)
 
                                         # Check if there are any Excel files
                                         if not excel_files:
-                                            messagebox.showinfo("Info", f"No file {file_name} found in {group_path}", parent=report_window)
+                                            messagebox.showinfo("Info", f"No Excel files found in folder: {emotion_folder}", parent=report_window)
                                         else:
                                             for file in excel_files:
                                                 file_listbox.insert(tk.END, file)
