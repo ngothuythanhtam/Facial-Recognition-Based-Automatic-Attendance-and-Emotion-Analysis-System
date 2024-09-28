@@ -2184,6 +2184,64 @@ def login():
                                 title_label = Label(account_window, text="Account", font=("times new roman", 25, "bold"), bg="#134B70", fg="#FDFFE2", bd=7, relief=GROOVE)
                                 title_label.place(x=0, y=0, relwidth=1)
 
+                                def display():
+                                    conn = connect()
+                                    if conn: 
+                                        cur = conn.cursor()
+                                        try:
+                                            cur.execute("""
+                                                        select ins_instructorCode, ins_name, ins_academicRank, ins_phone_number, ins_gmail 
+                                                        from instructor 
+                                                        where ins_instructorCode = %s
+                                                        """, (username_var.get(),))
+                                            data = cur.fetchall()
+                                            if data:
+                                                print("Debug - Fetched data:", data)  # Debug print
+                                                # Fetch the first row (assuming there is one)
+                                                data = data[0]
+                                                if isinstance(data, tuple) and len(data) == 5:
+                                                    icode.set(data[0])
+                                                    iname.set(data[1])
+                                                    irank.set(data[2])
+                                                    iphone.set(data[3])
+                                                    imail.set(data[4])
+                                                else:
+                                                    print("Debug - Unexpected data format:", data)  # Debug print
+                                                    messagebox.showinfo('Error', 'Unexpected data format', parent=account_window)
+                                        except pymysql.Error as e:
+                                            conn.rollback()
+                                            messagebox.showerror("Error", f"An error occurred: {str(e)}", parent=account_window)
+                                    else:
+                                        messagebox.showerror("Error", "Please select a course create_class_window", parent=account_window)
+                                
+                                def update_data():
+                                    conn = connect()
+                                    if conn: 
+                                        cur = conn.cursor()
+                                        try:
+                                            if iname.get()=="" or imail.get() =="" or iphone.get()=="":
+                                                messagebox.showerror("Error","All fields are Required", parent = account_window)
+                                            else:
+                                                q = messagebox.askyesno("Update", "Do you want to save this?",parent = account_window)
+                                                if q:
+                                                    cur.execute("""
+                                                                update instructor
+                                                                set ins_name = %s, ins_phone_number = %s, ins_gmail = %s
+                                                                where ins_instructorCode = %s
+                                                                """, (iname.get(), iphone.get(), imail.get(), username_var.get(),))
+                                                    conn.commit()
+                                                    messagebox.showinfo("Success", "Account updated successfully", parent=account_window)
+                                                else:
+                                                    messagebox.showinfo("Cancelled", "Update operation cancelled.", parent=account_window)
+                                        except pymysql.Error as e:
+                                            conn.rollback()
+                                            messagebox.showerror("Error", f"An error occurred: {str(e)}", parent=account_window)
+                                        finally:
+                                            cur.close()  # Ensure the cursor is closed
+                                            conn.close()  # Ensure the connection is closed
+                                    else:
+                                        messagebox.showerror("Error", "Please select a course create_class_window", parent=account_window)
+
                                 def back():
                                     account_window.destroy()
                                 back_btn = Button(account_window, text="Back", font=('Times new Roman', 15), fg='#E7F6F2', bg='#2C3333', height=1, width=7, command=back)
@@ -2206,9 +2264,9 @@ def login():
 
                                 insCode = Label(frame, text = "Code", bg = "#EEEEEE", fg="#134B70", font = ("italic",14, "bold")).place(x = x1 , y = 40 + z )
                                 insName = Label(frame, text = "Name", bg = "#EEEEEE", fg="#134B70", font = ("italic",14, "bold")).place(x = x1, y = 85 + z)
-                                rank = Label(frame, text = "Rank", bg = "#EEEEEE", fg="#134B70", font = ("italic",14, "bold")).place(x = x1, y = 130 + z)
-                                mail = Label(frame, text = "Gmail", bg = "#EEEEEE", fg="#134B70", font = ("italic",14, "bold")).place(x = x1, y = 175 + z)
-                                phone = Label(frame, text = "Phone", bg = "#EEEEEE", fg="#134B70", font = ("italic",14, "bold")).place(x = x1, y = 220 + z)
+                                label_rank = Label(frame, text = "Rank", bg = "#EEEEEE", fg="#134B70", font = ("italic",14, "bold")).place(x = x1, y = 130 + z)
+                                lael_bmail = Label(frame, text = "Gmail", bg = "#EEEEEE", fg="#134B70", font = ("italic",14, "bold")).place(x = x1, y = 175 + z)
+                                label_phone = Label(frame, text = "Phone", bg = "#EEEEEE", fg="#134B70", font = ("italic",14, "bold")).place(x = x1, y = 220 + z)
 
                                 code = Entry(frame,state="disabled",bg = "lightgray", width = 25, textvariable = icode,  font = ("italic",12, "bold")).place(x =x2, y = 40 + z)
                                 name = Entry(frame, width = 25,bg = "lightgray", textvariable = iname , font = ("italic",12, "bold")).place(x = x2, y = 85 + z)
@@ -2216,7 +2274,9 @@ def login():
                                 mail = Entry(frame, width = 25,bg = "lightgray", textvariable = imail,  font = ("italic",12, "bold")).place(x =x2, y = 175 + z)
                                 phone = Entry(frame, width = 25,bg = "lightgray", textvariable = iphone , font = ("italic",12, "bold")).place(x = x2, y = 220 + z)
 
-                                save_btn = Button(frame, text = "Save", bg = "#40679E",fg="#FDFFE2", height = "1", width = "8", font = ("Times new Roman", 18 , "bold")).place(x = 298, y = 410)
+                                save_btn = Button(frame, text = "Save", bg = "#40679E",fg="#FDFFE2", height = "1", width = "8", font = ("Times new Roman", 18 , "bold"), command=update_data).place(x = 298, y = 410)
+                                # Call display() function to populate the fields
+                                display()
 
                             except pymysql.err.OperationalError as e:
                                 messagebox.showerror( "Error","Sql Connection Error... Open Xamp Control Panel and then start MySql Server ")
@@ -2241,6 +2301,63 @@ def login():
                                 admin_window.configure(bg = "#ccd9de")
                                 title_label = Label(admin_window, text="Account", font=("times new roman", 25, "bold"), bg="#134B70", fg="#FDFFE2", bd=7, relief=GROOVE)
                                 title_label.place(x=0, y=0, relwidth=1)
+
+                                def display():
+                                    conn = connect()
+                                    if conn: 
+                                        cur = conn.cursor()
+                                        try:
+                                            cur.execute("""
+                                                        select ad_code, ad_name, ad_phoneNumber, ad_gmail 
+                                                        from administrator 
+                                                        where ad_code = %s
+                                                        """, (username_var.get(),))
+                                            data = cur.fetchall()
+                                            if data:
+                                                print("Debug - Fetched data:", data)  # Debug print
+                                                # Fetch the first row (assuming there is one)
+                                                data = data[0]
+                                                if isinstance(data, tuple) and len(data) == 4:
+                                                    acode.set(data[0])
+                                                    aname.set(data[1])
+                                                    aphone.set(data[2])
+                                                    amail.set(data[3])
+                                                else:
+                                                    print("Debug - Unexpected data format:", data)  # Debug print
+                                                    messagebox.showinfo('Error', 'Unexpected data format', parent=admin_window)
+                                        except pymysql.Error as e:
+                                            conn.rollback()
+                                            messagebox.showerror("Error", f"An error occurred: {str(e)}", parent=admin_window)
+                                    else:
+                                        messagebox.showerror("Error", "Please select a course create_class_window", parent=admin_window)
+                                
+                                def update_data():
+                                    conn = connect()
+                                    if conn: 
+                                        cur = conn.cursor()
+                                        try:
+                                            if aname.get()=="" or amail.get() =="" or aphone.get()=="":
+                                                messagebox.showerror("Error","All fields are Required", parent = admin_window)
+                                            else:
+                                                q = messagebox.askyesno("Update", "Do you want to save this?",parent = admin_window)
+                                                if q:
+                                                    cur.execute("""
+                                                                update administrator
+                                                                set ad_name = %s, ad_phoneNumber = %s, ad_gmail = %s
+                                                                where ad_code = %s
+                                                                """, (aname.get(), aphone.get(), amail.get(), username_var.get(),))
+                                                    conn.commit()
+                                                    messagebox.showinfo("Success", "Account updated successfully", parent=admin_window)
+                                                else:
+                                                    messagebox.showinfo("Cancelled", "Update operation cancelled.", parent=admin_window)
+                                        except pymysql.Error as e:
+                                            conn.rollback()
+                                            messagebox.showerror("Error", f"An error occurred: {str(e)}", parent=admin_window)
+                                        finally:
+                                            cur.close()  # Ensure the cursor is closed
+                                            conn.close()  # Ensure the connection is closed
+                                    else:
+                                        messagebox.showerror("Error", "Please select a course create_class_window", parent=admin_window)
 
                                 def back():
                                     admin_window.destroy()
@@ -2272,7 +2389,8 @@ def login():
                                 mail = Entry(frame, state="disabled",bg = "lightgray",width = 25, textvariable = amail , font = ("italic",12, "bold")).place(x = x2, y = 130 + z)
                                 phone = Entry(frame, width = 25,bg = "lightgray", textvariable = aphone,  font = ("italic",12, "bold")).place(x =x2, y = 175 + z)
 
-                                save_btn = Button(frame, text = "Save", bg = "#40679E",fg="#FDFFE2", height = "1", width = "8", font = ("Times new Roman", 18 , "bold")).place(x = 298, y = 360)
+                                save_btn = Button(frame, text = "Save", bg = "#40679E",fg="#FDFFE2", height = "1", width = "8", font = ("Times new Roman", 18 , "bold"), command=update_data).place(x = 298, y = 360)
+                                display()
 
                             except pymysql.err.OperationalError as e:
                                 messagebox.showerror( "Error","Sql Connection Error... Open Xamp Control Panel and then start MySql Server ", parent = admin_window)
