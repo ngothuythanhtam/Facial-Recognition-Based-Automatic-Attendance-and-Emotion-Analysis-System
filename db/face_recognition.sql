@@ -26,6 +26,8 @@ create table instructor (
     ins_gmail varchar(255) default null unique
 );
 
+select * from instructor;
+
 select ins_instructorCode, ins_name, ins_academicRank, ins_phone_number, ins_gmail 
 from instructor 
 where ins_instructorCode = '1229';
@@ -135,22 +137,15 @@ create table classCourse (
     foreign key (cfa_ID) references courseFollowAcaYear (cfa_ID)
 );
 
--- Học Phần thuộc Ngành
--- create table courseOfMajor (
--- 	course_ID int,
---     maj_ID int,
---     constraint fk_course_major foreign key (course_ID) references courses (course_ID),
---     constraint fk_major_course foreign key (maj_ID) references majors (maj_ID),
---     primary key (course_ID, maj_ID)
--- );
+select * from classCourse;
 
 -- Giảng Dạy 
 create table teaching (
 	teaching_ID int auto_increment primary key,
-	cfa_ID int,
+	clCourse_ID int,
     ins_ID int,
-    constraint fk_cfa_instructor foreign key (cfa_ID) references courseFollowAcaYear (cfa_ID),
-    constraint fk_instructor_cfa foreign key (ins_ID) references instructor (ins_ID)
+    constraint fk_clc_instructor foreign key (clCourse_ID) references classCourse (clCourse_ID),
+    constraint fk_instructor_clc foreign key (ins_ID) references instructor (ins_ID)
 );	
 
 -- Học 
@@ -190,6 +185,118 @@ CREATE TABLE emotion (
 );
 
 select * from emotion;
+
+CREATE TABLE timeTable (
+    tt_ID INT PRIMARY KEY AUTO_INCREMENT,
+    clCourse_ID INT,
+    tt_start INT NOT NULL,
+    tt_classPeriod int,
+    DOW_ID INT,
+    room_id int,
+    FOREIGN KEY (room_id) REFERENCES classRoom (room_id),
+    FOREIGN KEY (clCourse_ID) REFERENCES classCourse (clCourse_ID),
+    FOREIGN KEY (DOW_ID) REFERENCES dayOfWeak (DOW_ID)
+);
+
+-- Chèn dữ liệu cho học phần 4 nhóm (cfa_ID = 4)
+INSERT INTO timeTable (clCourse_ID, tt_start, tt_classPeriod, DOW_ID, room_id)
+VALUES 
+(1, 8, 2, 1, 1),  -- Nhóm 1 học vào thứ 2 (Monday), tại Phòng 201
+(1, 9, 2, 2, 2),  -- Nhóm 2 học vào thứ 3 (Tuesday), tại Phòng 202
+(1, 10, 2, 3, 3), -- Nhóm 3 học vào thứ 4 (Wednesday), tại Phòng 203
+(1, 11, 2, 4, 4); -- Nhóm 4 học vào thứ 5 (Thursday), tại Phòng 204
+
+-- Chèn dữ liệu cho học phần tiếp theo (cfa_ID = 5)
+INSERT INTO timeTable (clCourse_ID, tt_start, tt_classPeriod, DOW_ID, room_id)
+VALUES 
+(3, 8, 2, 1, 5),  -- Nhóm 1 học vào thứ 2 (Monday), tại Phòng 205
+(3, 9, 2, 2, 6),  -- Nhóm 2 học vào thứ 3 (Tuesday), tại Phòng 206
+(3, 10, 2, 3, 7), -- Nhóm 3 học vào thứ 4 (Wednesday), tại Phòng 207
+(3, 11, 2, 4, 8); -- Nhóm 4 học vào thứ 5 (Thursday), tại Phòng 208
+
+-- Chèn dữ liệu cho học phần tiếp theo (cfa_ID = 9)
+INSERT INTO timeTable (clCourse_ID, tt_start, tt_classPeriod, DOW_ID, room_id)
+VALUES 
+(22, 8, 2, 1, 9),  -- Nhóm 1 học vào thứ 2 (Monday), tại Phòng 209
+(22, 9, 2, 2, 10), -- Nhóm 2 học vào thứ 3 (Tuesday), tại Phòng 210
+(22, 10, 2, 3, 11),-- Nhóm 3 học vào thứ 4 (Wednesday), tại Phòng 211
+(22, 11, 2, 4, 12);-- Nhóm 4 học vào thứ 5 (Thursday), tại Phòng 212
+
+-- Chèn dữ liệu cho học phần tiếp theo (cfa_ID = 27)
+INSERT INTO timeTable (clCourse_ID, tt_start, tt_classPeriod, DOW_ID, room_id)
+VALUES 
+(23, 8, 2, 1, 13),  -- Nhóm 1 học vào thứ 2 (Monday), tại Phòng 213
+(23, 9, 2, 2, 14),  -- Nhóm 2 học vào thứ 3 (Tuesday), tại Phòng 214
+(23, 10, 2, 3, 15), -- Nhóm 3 học vào thứ 4 (Wednesday), tại Phòng 215
+(23, 11, 2, 4, 16); -- Nhóm 4 học vào thứ 5 (Thursday), tại Phòng 216
+
+-- Chèn dữ liệu cho học phần tiếp theo (cfa_ID = 38)
+INSERT INTO timeTable (clCourse_ID, tt_start, tt_classPeriod, DOW_ID, room_id)
+VALUES 
+(28, 8, 2, 1, 17),  -- Nhóm 1 học vào thứ 2 (Monday), tại Phòng 217
+(28, 9, 2, 2, 18),  -- Nhóm 2 học vào thứ 3 (Tuesday), tại Phòng 218
+(28, 10, 2, 3, 19), -- Nhóm 3 học vào thứ 4 (Wednesday), tại Phòng 219
+(28, 11, 2, 4, 20); -- Nhóm 4 học vào thứ 5 (Thursday), tại Phòng 220
+
+
+CREATE TABLE dayOfWeak (
+    DOW_ID INT PRIMARY KEY AUTO_INCREMENT,
+    DOW_day VARCHAR(50) NOT NULL
+);
+
+INSERT INTO dayOfWeak (DOW_day) VALUES 
+('Monday'), 
+('Tuesday'), 
+('Wednesday'), 
+('Thursday'), 
+('Friday'), 
+('Saturday'), 
+('Sunday');
+
+create table classRoom (
+	room_id int auto_increment primary key,
+    room_name varchar(255) not null unique
+);
+
+INSERT INTO classRoom (room_name) VALUES 
+('Phòng 201'),
+('Phòng 202'),
+('Phòng 203'),
+('Phòng 204'),
+('Phòng 205'),
+('Phòng 206'),
+('Phòng 207'),
+('Phòng 208'),
+('Phòng 209'),
+('Phòng 210'),
+('Phòng 211'),
+('Phòng 212'),
+('Phòng 213'),
+('Phòng 214'),
+('Phòng 215'),
+('Phòng 216'),
+('Phòng 217'),
+('Phòng 218'),
+('Phòng 219'),
+('Phòng 220');
+
+CREATE TABLE timeTable (
+    tt_ID INT PRIMARY KEY AUTO_INCREMENT,
+    clCourse_ID INT,
+    tt_start INT NOT NULL,
+    tt_classPeriod int,
+    DOW_ID INT,
+    room_id int,
+    FOREIGN KEY (room_id) REFERENCES classRoom (room_id),
+    FOREIGN KEY (clCourse_ID) REFERENCES classCourse (clCourse_ID),
+    FOREIGN KEY (DOW_ID) REFERENCES dayOfWeak (DOW_ID)
+);
+SELECT s.st_code, a.session_date, a.time_status, t.tt_start, cr.room_name, d.DOW_day 
+FROM attendance a
+JOIN studying s ON a.studying_st_code = s.st_code
+JOIN timeTable t ON t.clCourse_ID = s.clCourse_ID
+JOIN classRoom cr ON t.room_id = cr.room_id
+JOIN dayofweak d ON t.DOW_ID = d.DOW_ID;
 
 -- TESTING 
 -- insert
