@@ -149,46 +149,49 @@ def login():
 
                                 ##### Import data to the 'courses' table in MySQL #####
                                 def import_courses(file_paths):
-                                    if not file_paths:
-                                        messagebox.showerror("Error","No files selected for import.", parent=import_window)
-                                        return
-                                    try:
-                                        with cur:
-                                            for file_path in file_paths:
-                                                df = pd.read_excel(file_path, sheet_name='Sheet1')
+                                    conn = connect()
+                                    if conn:
+                                        cur = conn.cursor()
+                                        if not file_paths:
+                                            messagebox.showerror("Error","No files selected for import.", parent=import_window)
+                                            return
+                                        try:
+                                            with cur:
+                                                for file_path in file_paths:
+                                                    df = pd.read_excel(file_path, sheet_name='Sheet1')
 
-                                                # Remove unnecessary columns
-                                                cols = ['STT', 'Năm học', 'HK']
-                                                df.drop(cols, inplace=True, axis=1)
+                                                    # Remove unnecessary columns
+                                                    cols = ['STT', 'Năm học', 'HK']
+                                                    df.drop(cols, inplace=True, axis=1)
 
-                                                # Rename the colums in Excel to match with database
-                                                df.rename(columns={
-                                                    'Mã HP': 'course_code',
-                                                    'Tên học phần': 'course_name',
-                                                    'Số TC': 'course_credits',
-                                                    'Mã ngành': 'maj_Code'
-                                                }, inplace=True)
+                                                    # Rename the colums in Excel to match with database
+                                                    df.rename(columns={
+                                                        'Mã HP': 'course_code',
+                                                        'Tên học phần': 'course_name',
+                                                        'Số TC': 'course_credits',
+                                                        'Mã ngành': 'maj_Code'
+                                                    }, inplace=True)
 
-                                                if 'maj_Code' not in df.columns:
-                                                    raise ValueError("Required column 'maj_Code' is missing in the Excel file.")
+                                                    if 'maj_Code' not in df.columns:
+                                                        raise ValueError("Required column 'maj_Code' is missing in the Excel file.")
 
-                                                # convert type of courses_credits
-                                                df['course_credits'] = df['course_credits'].astype(int)
-                                                df = df[['course_code', 'course_name', 'course_credits', 'maj_Code']]
+                                                    # convert type of courses_credits
+                                                    df['course_credits'] = df['course_credits'].astype(int)
+                                                    df = df[['course_code', 'course_name', 'course_credits', 'maj_Code']]
 
-                                                insert_query = """
-                                                INSERT INTO courses (course_code, course_name, course_credits, maj_Code)
-                                                VALUES (%s, %s, %s, %s)
-                                                """
-                                                for index, row in df.iterrows():
-                                                    cur.execute(insert_query, (row['course_code'], row['course_name'], row['course_credits'], row['maj_Code']))
-                                            conn.commit()
-                                            messagebox.showinfo("Success", "Data imported successfully into the 'courses' table.", parent=import_window)
-                                            
-                                    except Exception as e:
-                                        messagebox.showerror("Error", f"An error occurred: {e}", parent=import_window)
-                                        print(f"An error occurred: {e}")
-                                        conn.rollback()
+                                                    insert_query = """
+                                                    INSERT INTO courses (course_code, course_name, course_credits, maj_Code)
+                                                    VALUES (%s, %s, %s, %s)
+                                                    """
+                                                    for index, row in df.iterrows():
+                                                        cur.execute(insert_query, (row['course_code'], row['course_name'], row['course_credits'], row['maj_Code']))
+                                                conn.commit()
+                                                messagebox.showinfo("Success", "Data imported successfully into the 'courses' table.", parent=import_window)
+                                                
+                                        except Exception as e:
+                                            messagebox.showerror("Error", f"An error occurred: {e}", parent=import_window)
+                                            print(f"An error occurred: {e}")
+                                            conn.rollback()
                                 
                                 ##### Import data to the 'courseFollowAcaYear' table in MySQL #####
                                 def import_courseFollowAcaYear(file_paths):
@@ -2243,9 +2246,7 @@ def login():
                                         except pymysql.Error as e:
                                             conn.rollback()
                                             messagebox.showerror("Error", f"An error occurred: {str(e)}", parent=account_window)
-                                        finally:
-                                            cur.close()  # Ensure the cursor is closed
-                                            conn.close()  # Ensure the connection is closed
+                 
                                     else:
                                         messagebox.showerror("Error", "Please select a course create_class_window", parent=account_window)
 
@@ -2360,9 +2361,7 @@ def login():
                                         except pymysql.Error as e:
                                             conn.rollback()
                                             messagebox.showerror("Error", f"An error occurred: {str(e)}", parent=admin_window)
-                                        finally:
-                                            cur.close()  # Ensure the cursor is closed
-                                            conn.close()  # Ensure the connection is closed
+                                        
                                     else:
                                         messagebox.showerror("Error", "Please select a course create_class_window", parent=admin_window)
 
@@ -2448,7 +2447,7 @@ def login():
                         gallery_btn.place(x = x1, y = 520)
 
                         admin_img = ImageTk.PhotoImage(Image.open('./img/admin.png').resize((190, 180), Image.LANCZOS))
-                        account_btn = Button(window, image = admin_img , text = "Admin Account", font = ("Times new roman", 16), fg = "#344C64", height = 250, width= 275, compound = BOTTOM, command=instructor_accounts) 
+                        account_btn = Button(window, image = admin_img , text = "Account", font = ("Times new roman", 16), fg = "#344C64", height = 250, width= 275, compound = BOTTOM, command=instructor_accounts) 
                         account_btn.place(x = x2, y = 520)
 
                         logout_img = ImageTk.PhotoImage(Image.open('./img/logout.png').resize((190, 180), Image.LANCZOS))
