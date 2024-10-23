@@ -1,0 +1,16 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.row-gv {
+    display: flex;
+    height: 100%;
+    gap: 30px; /* Optional: Adds space between the divs */
+    margin-left: 110px;
+}
+
+.card {
+    margin: 10px;
+    
+}

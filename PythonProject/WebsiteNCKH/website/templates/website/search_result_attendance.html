@@ -1,0 +1,185 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="{% static 'jquery-3.7.1.js' %}"></script>
+        <!-- ===== CSS ===== -->
+        <link rel="stylesheet" type="text/css" href="{% static 'website/css/styles.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'website/css/table.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'website/css/manage.css' %}">
+        
+        <!-- = FONT && ICON =-->    
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Jua&family=Mandali&family=Raleway:ital,wght@0,100..900;1,100..900&family=Tilt+Neon&display=swap" rel="stylesheet">
+        <title>Attendance</title>
+    </head>
+    <body id="body-pd">
+        <div class="container">
+            <!-- sidebar -->
+            <div class="sidebar" id="navbar">
+                <nav class="nav">
+                    <div class="top-left">
+                        <ion-icon name="menu-outline" class="navtoggle" id="nav-toggle"></ion-icon>
+                        <div class="avtimg"><a href="">
+                            <img src="/static/website/images/ctu.png" alt="">
+                        </div>
+                    </div>
+                    <div class="nav__list">
+                        <a href="{% url 'home' %}" class="navlink">
+                            <ion-icon name="home-outline" class="icon"></ion-icon>
+                            <span class="navname">Home</span>
+                        </a>
+                        <a href="{% url 'search_result_attendance' %}" class="navlink active">
+                            <ion-icon name="calendar-outline"class="icon"></ion-icon>
+                            <span class="navname">Attendance</span>
+                        </a>
+                        <a href="{% url 'profile' %}" class="navlink">
+                            <ion-icon name="person-outline"class="icon"></ion-icon>
+                            <span class="navname">Account</span>
+                        </a>
+                    {% if request.session.user_role == 'Instructors' %}
+                        <a href="{% url 'gosystem' %}" class="navlink">
+                            <ion-icon name="open-outline" class="icon"></ion-icon>
+                            <span class="navname">Open System</span>
+                        </a>
+                    {% endif %}
+                        <a href="{% url 'logout' %}" class="navlink">
+                            <ion-icon name="log-out-outline" class="icon"></ion-icon>
+                            <span class="navname">Log Out</span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+            <!-- end sidebar -->
+            <div class="calendar">
+                <div class="namead">
+                    <h2>CT<span>U</span></h2>
+                </div>
+                <div class="date">
+                    <div class="icon">
+                        <ion-icon name="calendar-outline"></ion-icon>
+                    </div> 
+                    <div>
+                        <span id="date"></span>
+                    </div>
+                </div>
+                <nav class="boxsearch">
+                    <div class="avtuser">
+                        <a href="{% url 'profile' %}">
+                            <img src="{{ avatar }}" alt="">
+                        </a>
+                    </div>
+                </nav>
+            </div>
+            
+            <main id="content">
+                <div>
+                    <h1 style="margin-top: 20px;margin-left:30px; color: #959595c9;">HOME</h1>
+                    <section class="course" id="course">
+                        {% if request.session.user_role == 'Students' %}
+                            <div class="middle-text">
+                                <h4>My Course</h4>
+                                <h2>Let's Check Current Course</h2>
+                            </div>
+                        {% elif request.session.user_role == 'Instructors' %}
+                            <div class="middle-text">
+                                <h4>My Work</h4>
+                                <h2>My Current Course</h2>
+                            </div>
+                         {% endif %}
+                        <div class="filter">
+                            <form action="{% url 'search_result_attendance' %}" method="get" name="select">
+                                {% csrf_token %}
+                                <div class="select-item">
+                                    <label for="academic-year" class="label" style="padding-top: 9px;">Academic Year</label>
+                                    <select id="academic-year" class="form-control" name="academic_year">
+                                        <option selected>Choose academic...</option>
+                                        {% for year in list_year %}
+                                            <option value="{{ year.0 }}">{{ year.0 }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="semester" class="label" style="padding-top: 9px;"> & Semester</label>
+                                    <select id="semester" class="form-control" name="semester">
+                                        <option selected>Choose semester...</option>
+                                        {% for sem in list_sem %}
+                                            <option value="{{ sem.0 }}">
+                                                {% if sem.0 == 1 %}
+                                                    Học kỳ 1
+                                                {% elif sem.0 == 2 %}
+                                                    Học kỳ 2
+                                                {% else %}
+                                                    Học kỳ 3
+                                                {% endif %}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="select-item btn-submit btn">
+                                        <span class="btn-submitspan">Submit</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+                    <h1 style="margin: 30px;">Search Results</h1>
+                    {% if request.session.user_role == 'Students' %}
+                        <div class="task">
+                            {% for course in data %}
+                                <div class="list">
+                                    <img src="/static/website/images/b{{ forloop.counter|add:"-1"|divisibleby:"2"|yesno:"1,2" }}.jpg" alt="" class="courseimg">
+                                    <h3>{{ course.0 }} - {{ course.1 }} </h3>
+                                    <p class="cdetails">Dr. {{ course.2 }}</p>
+                                    <div class="in-text">
+                                        <div class="groupcourse">
+                                            <h6>Class:</h6><h4>{{ course.3 }}</h4>
+                                        </div>
+                                        <div class="s-btnn">
+                                            <a href="{% url 'result_search_attendance' %}?course_code={{course.0}}&classcourse={{course.3}}&academicyear={{course.4}}&semester={{course.5}}">Access</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% elif request.session.user_role == 'Instructors' %}
+                        <div class="task">
+                            {% for course in data %}
+                                <div class="list">
+                                    <img src="/static/website/images/b{{ forloop.counter|add:"-1"|divisibleby:"2"|yesno:"1,2" }}.jpg" alt="" class="courseimg">
+                                    <h3>{{ course.0 }} - {{ course.1 }} </h3>
+                                    <p class="cdetails">Dr. {{ course.2 }}</p>
+                                    <div class="in-text">
+                                        <div class="groupcourse">
+                                            <h6>Class:</h6><h4>{{ course.3 }}</h4>
+                                        </div>
+                                        <div class="s-btnn">
+                                            <a href="{% url 'ls_attflw_course' %}?course_code={{course.0}}&classcourse={{course.3}}&academicyear={{course.4}}&semester={{course.5}}">Access</a>
+                                        </div>
+                                        <div class="emotion">
+                                            <a href="{% url 'emotion' %}?course_code={{ course.0 }}&classcourse={{ course.3 }}&course_name={{ course.1 }}&curscholastic={{ course.4 }}&cursemester={{ course.5 }}">
+                                                <!-- <ion-icon name="happy-outline" class="icon"></ion-icon> -->
+                                                Emotion
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </main>
+        </div>
+        <script type="text/javascript">
+            window.addEventListener('beforeunload', function () {
+                navigator.sendBeacon('/clear-course-session/');
+            });
+        </script>
+        <script src="https://unpkg.com/ionicons@5.1.2/dist/ionicons.js"></script>             
+        <!-- ===== MAIN JS ===== -->
+        <script src="{% static 'website/js/main.js' %}"></script>
+        <script src="{% static 'website/js/admin.js' %}"></script>
+    </body>
+</html>
+            

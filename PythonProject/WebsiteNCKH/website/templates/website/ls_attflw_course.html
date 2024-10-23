@@ -1,0 +1,178 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="{% static 'jquery-3.7.1.js' %}"></script>
+        <!-- ===== CSS ===== -->
+        <link rel="stylesheet" type="text/css" href="{% static 'website/css/styles.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'website/css/table.css' %}">
+        <!-- = FONT && ICON =-->    
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Jua&family=Mandali&family=Raleway:ital,wght@0,100..900;1,100..900&family=Tilt+Neon&display=swap" rel="stylesheet">
+        <title>Attendance</title>
+    </head>
+    <body id="body-pd">
+        <div class="container">
+            <!-- sidebar -->
+            <div class="sidebar" id="navbar">
+                <nav class="nav">
+                    <div class="top-left">
+                        <ion-icon name="menu-outline" class="navtoggle" id="nav-toggle"></ion-icon>
+                        <div class="avtimg"><a href="">
+                            <img src="/static/website/images/ctu.png" alt="">
+                        </div>
+                    </div>
+                    <div class="nav__list">
+                        <a href="{% url 'home' %}" class="navlink">
+                            <ion-icon name="home-outline" class="icon"></ion-icon>
+                            <span class="navname">Home</span>
+                        </a>
+                        <a href="{% url 'search_result_attendance' %}" class="navlink active">
+                            <ion-icon name="calendar-outline"class="icon"></ion-icon>
+                            <span class="navname">Attendance</span>
+                        </a>
+                        <a href="{% url 'profile' %}" class="navlink">
+                            <ion-icon name="person-outline"class="icon"></ion-icon>
+                            <span class="navname">Account</span>
+                        </a>
+                        {% if request.session.user_role == 'Instructors' %}
+                            <a href="{% url 'gosystem' %}" class="navlink">
+                                <ion-icon name="open-outline" class="icon"></ion-icon>
+                                <span class="navname">Open System</span>
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'logout' %}" class="navlink">
+                            <ion-icon name="log-out-outline" class="icon"></ion-icon>
+                            <span class="navname">Log Out</span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+            <!-- end sidebar -->
+            <div class="calendar">
+                <div class="namead">
+                    <h2>CT<span>U</span></h2>
+                </div>
+                <div class="date">
+                    <div class="icon">
+                        <ion-icon name="calendar-outline"></ion-icon>
+                    </div> 
+                    <div>
+                        <span id="date"></span>
+                    </div>
+                </div>
+                <nav class="boxsearch">
+                    <div class="avtuser">
+                        <a href="{% url 'profile' %}">
+                            <img src="{{ avatar }}" alt="">
+                        </a>
+                    </div>
+                </nav>
+            </div>
+            <main id="content">
+                <div>
+                    <h1 style="margin-top: 20px;margin-left:30px; color: #959595c9;">HOME</h1>
+                    <section class="course" id="course">
+                        <div class="middle-text">
+                            <h4>My Work</h4>
+                            <h2>{{ request.session.course_code }} - {{ request.session.curCourse_name }}</h2>
+                            <h3>Class: {{ request.session.clCourse_code }}</h3>
+                        </div>
+                        <div class="filter">
+                            <form action="{% url 'ls_attflw_course' %}" method="get" name="select">
+                                {% csrf_token %}
+                                <div class="select-item">
+                                    <label for="semester" class="form-control" style="padding-top: 9px;">Select Date:</label>
+                                    <input type="date" id="semester" class="form-control" name="date" required>
+                                    
+                                    <label for="semester" class="label" style="padding-top: 9px;"> & Status</label>
+                                    <select id="semester" class="form-control" name="status">
+                                        <option selected>Choose status...</option>
+                                        <option value="type1">All</option>
+                                        <option value="type2">Present</option>
+                                        <option value="type3">Absent</option>
+                                    </select>
+                                    <button type="submit" class="select-item btn-submit btn">
+                                        <span class="btn-submitspan">Submit</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="task">
+                            <table id="myTable" class="table">
+                                <thead class="table-head">
+                                    <tr>
+                                        <th>Number</th>
+                                        <th scope="col">Code</th>
+                                        <th scope="col">Name</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Time</th>
+                                        <th scope="col">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="table-body">
+                                    {% for record in page_obj %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ record.1 }}</td>
+                                        <td>{{ record.2 }}</td>
+                                        <td>{{ record.0 }}</td>
+                                        <td>{{ record.3 }}</td>
+                                        {% if record.3 != null %}
+                                            <td style="color: #55f155;font-weight: bold;">Present</td>
+                                        {% else %}
+                                            <td style="color: #c13c39;font-weight: bold;">Absent</td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% if status != None and date != None %}
+                            <div class="pagination">
+                                <span class="step-links">
+                                    {% if page_obj.has_previous %}
+                                        <a href="?course_code={{ course_code }}&classcourse={{ clCourse_code }}&academicyear={{ academicyear }}&semester={{ semester }}&date={{ date }}&status={{ status }}&page=1">&laquo; first</a>
+                                        <a href="?course_code={{ course_code }}&classcourse={{ clCourse_code }}&academicyear={{ academicyear }}&semester={{ semester }}&date={{ date }}&status={{ status }}&page={{ page_obj.previous_page_number }}">previous</a>
+                                    {% endif %}
+                                    <span class="current">
+                                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                                    </span>
+                                    {% if page_obj.has_next %}
+                                        <a href="?course_code={{ course_code }}&classcourse={{ clCourse_code }}&academicyear={{ academicyear }}&semester={{ semester }}&date={{ date }}&status={{ status }}&page={{ page_obj.next_page_number }}">next</a>
+                                        <a href="?course_code={{ course_code }}&classcourse={{ clCourse_code }}&academicyear={{ academicyear }}&semester={{ semester }}&date={{ date }}&status={{ status }}&page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        {% else %}
+                            <div class="pagination">
+                                <span class="step-links">
+                                    {% if page_obj.has_previous %}
+                                        <a href="?course_code={{ course_code }}&classcourse={{ clCourse_code }}&academicyear={{ academicyear }}&semester={{ semester }}&page=1">&laquo; first</a>
+                                        <a href="?course_code={{ course_code }}&classcourse={{ clCourse_code }}&academicyear={{ academicyear }}&semester={{ semester }}&page={{ page_obj.previous_page_number }}">previous</a>
+                                    {% endif %}
+                                    <span class="current">
+                                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                                    </span>
+                                    {% if page_obj.has_next %}
+                                        <a href="?course_code={{ course_code }}&classcourse={{ clCourse_code }}&academicyear={{ academicyear }}&semester={{ semester }}&page={{ page_obj.next_page_number }}">next</a>
+                                        <a href="?course_code={{ course_code }}&classcourse={{ clCourse_code }}&academicyear={{ academicyear }}&semester={{ semester }}&page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        {% endif %}
+                    </section>
+                </div>
+            </main>
+        </div>
+        <script src="https://unpkg.com/ionicons@5.1.2/dist/ionicons.js"></script>             
+        <!-- ===== MAIN JS ===== -->
+        <script src="{% static 'website/js/main.js' %}"></script>
+        <script src="{% static 'website/js/admin.js' %}"></script>
+    </body>
+</html>
+            

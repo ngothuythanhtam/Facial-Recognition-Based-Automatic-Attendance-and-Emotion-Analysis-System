@@ -174,3 +174,4 @@ dest_path="./Facenet-emotion"
 # fromfiles(db_path=db_path, source_dir=source_path, dest_dir=dest_path, enable_face_analysis=False, model_name="Facenet", detector_backend="opencv", anti_spoofing=False)
 # fromfiles(db_path=db_path, source_dir=source_path, dest_dir=dest_path,
 #             enable_face_analysis=True, model_name="Facenet", detector_backend="retinaface", anti_spoofing=False)    
+

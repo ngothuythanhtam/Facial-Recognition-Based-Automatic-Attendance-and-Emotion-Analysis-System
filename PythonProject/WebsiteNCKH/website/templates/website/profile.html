@@ -1,0 +1,223 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile Page</title>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="{% static 'jquery-3.7.1.js' %}"></script>
+    <!-- ===== CSS ===== -->
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/styles.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/table.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/stylesProfile.css' %}">
+    <!-- = FONT && ICON =-->    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Jua&family=Mandali&family=Raleway:ital,wght@0,100..900;1,100..900&family=Tilt+Neon&display=swap" rel="stylesheet">
+    
+</head>
+<body id="body-pd">
+    <div class="container">
+        <!-- sidebar -->
+        <div class="sidebar" id="navbar">
+            <nav class="nav">
+                <div class="top-left">
+                    <ion-icon name="menu-outline" class="navtoggle" id="nav-toggle"></ion-icon>
+                    <div class="avtimg"><a href="">
+                        <img src="/static/website/images/ctu.png" alt="">
+                    </div>
+                </div>
+                <div class="nav__list">
+                    {% if request.session.user_role == 'Students' %}
+                        <a href="{% url 'home' %}" class="navlink">
+                        <ion-icon name="home-outline" class="icon"></ion-icon>
+                        <span class="navname">Home</span>
+                    </a>
+                    {% elif request.session.user_role == 'Instructors' %}
+                        <a href="{% url 'home' %}" class="navlink">
+                            <ion-icon name="home-outline" class="icon"></ion-icon>
+                            <span class="navname">Home</span>
+                        </a>
+                    {% elif request.session.user_role == 'Administrator' %}
+                        <a href="{% url 'manage_acc_system' %}" class="navlink"></a>
+                        <ion-icon name="home-outline" class="icon"></ion-icon>
+                        <span class="navname">Home</span>
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'home' %}" class="navlink">
+                        <ion-icon name="calendar-outline"class="icon"></ion-icon>
+                        <span class="navname">Attendance</span>
+                    </a>
+                    {% if request.session.user_role == 'Students' %}
+                        <a href="{% url 'profile' %}" class="navlink active">
+                            <ion-icon name="person-outline"class="icon"></ion-icon>
+                            <span class="navname">Account</span>
+                        </a>
+                    {% elif request.session.user_role == 'Instructors' %}
+                        <a href="{% url 'profile' %}" class="navlink active">
+                            <ion-icon name="person-outline"class="icon"></ion-icon>
+                            <span class="navname">Account</span>
+                        </a>
+                    {% elif request.session.user_role == 'Instructors' %}
+                        <a href="{% url 'gosystem' %}" class="navlink">
+                            <ion-icon name="open-outline" class="icon"></ion-icon>
+                            <span class="navname">Open System</span>
+                        </a>
+                    {% elif request.session.user_role == 'Administrator' %}
+                        <a href="{% url 'manage_acc_system' %}" class="navlink active">
+                            <ion-icon name="person-outline"class="icon"></ion-icon>
+                            <span class="navname">Account</span>
+                        </a>
+                    </a>
+                    {% endif %}
+                    {% if request.session.user_role == 'Instructors' %}
+                        <a href="{% url 'gosystem' %}" class="navlink">
+                            <ion-icon name="open-outline" class="icon"></ion-icon>
+                            <span class="navname">Open System</span>
+                        </a>
+                    {% endif %}
+                </div>
+                <a href="{% url 'logout' %}" class="navlink">
+                    <ion-icon name="log-out-outline" class="icon"></ion-icon>
+                    <span class="navname">Log Out</span>
+                </a>
+            </nav>
+        </div>
+        <!-- end sidebar -->
+        <div class="calendar">
+            <div class="namead">
+                <h2>CT<span>U</span></h2>
+            </div>
+            <div class="date">
+                <div class="icon">
+                    <ion-icon name="calendar-outline"></ion-icon>
+                </div> 
+                <div>
+                    <span id="date"></span>
+                </div>
+            </div>
+            <nav class="boxsearch">
+                <div class="avtuser">
+                    <a href="{% url 'profile' %}">
+                        <img src="{{ avatar }}" alt="">
+                    </a>
+                </div>
+            </nav>
+        </div>
+        <main id="content">
+            <div>
+                <h1 style="margin-top: 20px;margin-left:30px; color: #959595c9;">Account</h1>
+                <div class="middle-text">
+                    <h4>Your Information</h4>
+                    <h2>Check Your Information Carefully</h2>
+                </div>
+                <div class="container mt-5">
+                    <div class="profile-card">
+                        <form method="POST" enctype="multipart/form-data" id="uploadImg">
+                            {% csrf_token %}
+                            {{ form.as_p }}
+                            <div class="avtprofile">
+                                <img src="{{ avatar }}" alt="Avatar" class="avatar-img">
+                                <br>
+                                <button type="button" id="changeAvatar">Change avatar</button>
+                                <input type="file" name="avatar" id="avatar" class="form-ava-control" value="{{ avatar }}" hidden>
+                                <button type="submit" form="uploadImg" name="upload" id="uploadBtn" hidden>Upload</button>
+                            </div>
+                        </form>
+                        
+                        <form method="POST" id="profileForm" class="profile">
+                            {% csrf_token %}
+                            {{ info_form.as_p }}
+
+                            <div class="form-group">
+                                <label for="username">ID</label>
+                                <input type="text" id="username" name="username" class="form-control" readonly value="{{ username }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="fullname">Name</label>
+                                <input type="text" id="fullname" name="fullname" class="form-control" readonly value="{{ fullname }}">
+                            </div>
+                            {% if request.session.user_role == 'Students' %}
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" class="form-control" readonly value="{{ email }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="birthday">Birthday</label>
+                                <input type="text" id="birthday" name="birthday" class="form-control" readonly value="{{ birthday|date:'Y-m-d' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="text" id="phone" name="phone" class="form-control" readonly value="{{ phone }}"
+                                       maxlength="10" pattern="\d*" title="Số điện thoại không được chứa kí tự ngoài số">
+                            </div>
+                            <div class="form-group">
+                                <label for="classname">Class</label>
+                                <input type="text" id="classname" class="form-control" readonly value="{{ classname|default:"Trống" }}">
+                            </div>
+                            {% elif request.session.user_role == 'Instructors' %}
+                            <div class="form-group">
+                                <label for="academic_rank">Academic Rank</label>
+                                <input type="text" id="academic_rank" name="academic_rank" class="form-control" value="{{ academic_rank }}">
+                            </div>
+                            {% elif request.session.user_role == 'Administrators' %}
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="text" id="phone" name="phone" class="form-control" readonly value="{{ phone }}"
+                                       maxlength="10" pattern="\d*" title="Số điện thoại không được chứa kí tự ngoài số">
+                            </div>
+                            {% endif %}
+            
+                            {% if messages %}
+                                <div class="alert" role="alert">
+                                    {% for message in messages %}
+                                        <p style="text-align: center; margin: auto;">{{ message }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+            
+                            <div class="form-group text-center buttonprofile">
+                                <button type="button" class="btn-custom" id="editButton">Update</button>
+                                <button type="submit" class="btn-custom" name="save" id="saveButton" style="display: none;" form="profileForm">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://unpkg.com/ionicons@5.1.2/dist/ionicons.js"></script>             
+    <!-- ===== MAIN JS ===== -->
+    <script src="{% static 'website/js/main.js' %}"></script>
+    <script src="{% static 'website/js/admin.js' %}"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        document.getElementById('editButton').addEventListener('click', function() {
+            // Enable form fields for editing
+            document.querySelectorAll('#profileForm input').forEach(function(input) {
+                if (!input.hasAttribute('readonly')) {
+                    return;
+                }
+                if (input.id !== 'username' && input.id !== 'email' && input.id !== 'classname') {
+                    input.removeAttribute('readonly');
+                }
+            });
+            // Show the Save button and hide the Edit button
+            document.getElementById('editButton').style.display = 'none';
+            document.getElementById('saveButton').style.display = 'inline-block';
+        });
+
+        //khi bấm nút upload
+        document.getElementById('changeAvatar').addEventListener('click', function() {
+            document.getElementById('changeAvatar').style.display = 'none'
+            document.getElementById('avatar').style.display = 'block'
+            document.getElementById('uploadBtn').style.display = 'block'
+        })
+    </script>
+</body>
+</html>

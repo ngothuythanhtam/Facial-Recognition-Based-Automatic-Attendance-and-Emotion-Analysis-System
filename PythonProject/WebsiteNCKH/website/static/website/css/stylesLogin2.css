@@ -1,0 +1,280 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Times New Roman', serif;
+    background-image: url("/static/website/images/ctubg.jpg");
+    /* Path to your background image */
+    background-size: cover;
+    /* Ensures the image covers the entire screen */
+    background-position: center;
+    /* Centers the image */
+    background-repeat: no-repeat;
+    /* Ensures the image doesn’t repeat */
+    background-attachment: fixed;
+    /* Keeps the background fixed when scrolling */
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Adds a semi-transparent overlay to darken the background */
+}
+
+.login-logo {
+    margin-left: 40%;
+    margin-right: 40%;
+    width: 20%;
+    /* Adjust the size of the logo */
+    height: auto;
+    /* Ensures the logo maintains its aspect ratio */
+    margin-bottom: 15px;
+    margin-top: 5px;
+}
+
+.scroll-to-bottom-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #00aaff;
+    /* Light blue */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.scroll-to-bottom-btn:hover {
+    background-color: #003a6c;
+    /* Dark blue */
+    transform: scale(1.1);
+}
+
+.scroll-to-bottom-btn:focus {
+    outline: none;
+}
+
+.login-form-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, monospace;
+    max-width: 400px;
+    margin: auto;
+    padding: 30px;
+    border-radius: 15px;
+    transition: transform 0.5s ease, box-shadow 0.5s ease;
+    position: relative;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    background-color: #fff;
+    z-index: 2;
+}
+
+.container-fluid {
+    background-color: rgba(0, 0, 0, 0.103);
+}
+
+.login-form {
+    margin-top: 25px;
+}
+
+.login-form-container:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    /* Slightly darker shadow */
+}
+
+.login-form-title {
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 2.5em;
+    color: #003a6c;
+    /* Dark blue */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    transition: color 0.3s ease;
+}
+
+
+.login-form .form-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.login-form .form-group label {
+    font-size: 1.1em;
+    color: #003a6c;
+    /* Dark blue */
+    margin-bottom: 5px;
+    transition: color 0.3s ease;
+    display: block;
+    margin-left: 10px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, monospace;
+}
+
+.input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-container .icon {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, monospace;
+    font-size: 1.1em;
+    color: #003a6c;
+    position: absolute;
+    left: 10px;
+    font-size: 20px;
+    color: #0c0079;
+}
+
+.login-form .form-group input {
+    width: 100%;
+    height: 46px;
+    padding: 10px;
+    margin-bottom: 5px;
+    padding-left: 35px;
+    padding-right: 35px;
+    border: 1px solid #ccc;
+    /* Light gray border */
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.3);
+    /* Slightly transparent background */
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    /* Ensure padding and border are included in width */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, monospace;
+}
+
+.login-form .form-group input:focus {
+    outline: none;
+    border-color: #00aaff;
+    /* Light blue */
+    box-shadow: 0 0 10px rgba(0, 170, 255, 0.5);
+    /* Blue shadow */
+    background-color: rgba(255, 255, 255, 0.5);
+    /* More opaque on focus */
+}
+
+.login-form .form-group input:hover {
+    border-color: #00aaff;
+    /* Light blue */
+    background-color: rgba(255, 255, 255, 0.4);
+    /* Slightly darker on hover */
+}
+
+.title {
+    text-align: center;
+    /* margin-bottom: 20px; */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, monospace;
+    color: #003a6c;
+    /* Dark blue */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    transition: color 0.3s ease;
+}
+
+.login-form .btn {
+    display: block;
+    width: 35%;
+    margin: 20px auto 0;
+    /* Center button and add margin-top */
+    padding: 12px;
+    background: linear-gradient(120deg, #ff7b00, #ffd104);
+    /* Gradient from dark blue to light blue */
+    border: none;
+    border-radius: 30px;
+    color: #fff;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.login-form .btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300%;
+    height: 300%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: all 0.5s ease;
+    transform: translate(-50%, -50%) scale(0);
+    border-radius: 50%;
+}
+
+.login-form .btn:hover::before {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.login-form .btn:hover {
+    background-color: #00aaff;
+    /* Light blue */
+    transform: scale(1.05);
+}
+
+.login-form .btn:active {
+    background-color: #0077cc;
+    /* Slightly darker blue for active state */
+    transform: scale(0.98);
+}
+
+.footer {
+    background: rgba(255, 255, 255, 0.9);
+    /* Transparent background similar to the form */
+    padding: 20px 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    /* Lighter border color */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    /* Slight shadow to match form */
+    position: relative;
+    width: 100%;
+}
+
+.footer .container {
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.footer .row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.footer h5 {
+    font-size: 1.2em;
+    margin-bottom: 15px;
+    color: #003a6c;
+    /* Dark blue for consistency */
+}
+
+.footer p,
+.footer ul,
+.footer li,
+.footer a {
+    color: #555;
+    /* Darker text color */
+}
+
+.footer ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.footer ul li {
+    margin-bottom: 10px;
+}
+
+.footer ul li a {
+    text-decoration: none;
+    color: #00aaff;
+    /* Light blue link color */
+}
+
+.footer ul li a:hover {
+    text-decoration: underline;
+}
