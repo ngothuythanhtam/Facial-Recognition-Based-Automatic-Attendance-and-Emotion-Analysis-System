@@ -82,7 +82,7 @@ def stream(
     frame_threshold = max(frame_threshold, 1)
     print("Indexing "+db_path)
 
-    video.analysis(
+    files.analysis(
         db_path=db_path,
         model_name=model_name,
         detector_backend=detector_backend,
@@ -94,7 +94,7 @@ def stream(
         anti_spoofing=anti_spoofing,
     )
 
-   
+
 
 def fromfiles(
     db_path: str,
@@ -150,32 +150,27 @@ def fromfiles(
         anti_spoofing=anti_spoofing,
     ) 
 
-db_path="face-db"
-source_path="test1"
-dest_path="test2"
+db_path="./face-db"
+source_path="./tests"
+dest_path="./Facenet-emotion"
 # models = [
 #   "VGG-Face", 
 #   "Facenet", 
 #   "Facenet512", 
-#   "OpenFace", 
-#   "DeepFace", 
-#   "DeepID", 
 #   "ArcFace", 
 #   "Dlib", 
-#   "SFace",
-#   "GhostFaceNet",
+
+
 # ]
 
 # metrics = ["cosine", "euclidean", "euclidean_l2"]
 
 # backends = [
-#   'opencv',  
-#   'dlib', 
-#   'mtcnn', 
 #   'retinaface'
 # ]
-# stream(db_path=db_path, enable_face_analysis=False, model_name="ArcFace", detector_backend="retinaface", anti_spoofing=False,source=0) 
+# stream(db_path=db_path, enable_face_analysis=False, model_name="ArcFace", detector_backend="retinaface", anti_spoofing=False, source=1) 
 #Theo dõi trạng thái cảm xúc set enable_face_analysis=True, 15s chụp cảm xúc, thống kê bao nhiêu khuôn mặt
 
 # fromfiles(db_path=db_path, source_dir=source_path, dest_dir=dest_path, enable_face_analysis=False, model_name="Facenet", detector_backend="opencv", anti_spoofing=False)
-# fromfiles(db_path=db_path, source_dir=source_path, dest_dir=dest_path, enable_face_analysis=True, model_name="ArcFace", detector_backend="retinaface", anti_spoofing=False)
+# fromfiles(db_path=db_path, source_dir=source_path, dest_dir=dest_path,
+#             enable_face_analysis=True, model_name="Facenet", detector_backend="retinaface", anti_spoofing=False)    

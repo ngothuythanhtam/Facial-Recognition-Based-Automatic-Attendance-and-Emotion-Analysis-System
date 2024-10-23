@@ -505,16 +505,16 @@ def login():
                                 def search_by_year_se():
                                     sem_id = se_options.get(search_sem.get())
                                     year = search_year.get()
-                                    if search_year.get() == "Chọn Năm Học" and search_sem.get() == "Chọn Học Kỳ":
+                                    if search_year.get() == "Select Year" and search_sem.get() == "Select Semester":
                                         messagebox.showwarning('Input Error', 'Please select either Year or Semester')
                                         return
-                                    if search_year.get() == "Chọn Năm Học":
+                                    if search_year.get() == "Select Year":
                                         cur.execute("""SELECT cfa.course_code, c.course_name, cfa.ay_schoolYear, s.se_semesterName
                                                     FROM coursefollowacayear cfa
                                                     JOIN courses c ON cfa.course_code = c.course_code
                                                     JOIN semester s ON cfa.se_ID = s.se_ID
                                                     WHERE cfa.se_ID = %s""", (sem_id,))
-                                    elif search_sem.get() == "Chọn Học Kỳ":
+                                    elif search_sem.get() == "Select Semester":
                                         cur.execute("""SELECT cfa.course_code, c.course_name, cfa.ay_schoolYear, s.se_semesterName
                                                     FROM coursefollowacayear cfa
                                                     JOIN courses c ON cfa.course_code = c.course_code
@@ -538,8 +538,8 @@ def login():
                                         
                                 # clear data
                                 def clear():
-                                    search_year.set("Chọn Năm Học")
-                                    search_sem.set("Chọn Học Kỳ")   
+                                    search_year.set("Select Year")
+                                    search_sem.set("Select Semester")   
                                     display()
                                     
                             # Clear 
@@ -623,8 +623,8 @@ def login():
                                 search_sem = ttk.Combobox(search_frame, values=list(se_options.keys()), state="readonly", width=20, style='Custom.TCombobox', height=25)
                                 search_sem.pack(side=LEFT, padx=10, pady=10)
                                 # Đặt giá trị mặc định cho Combobox (tùy chọn)
-                                search_year.set("Chọn Năm Học")
-                                search_sem.set("Chọn Học Kỳ")
+                                search_year.set("Select Year")
+                                search_sem.set("Select Semester")
                                 #btn
                                 button_frame = Frame(search_frame, bg="#577B8D")
                                 button_frame.pack(side=LEFT)
@@ -648,40 +648,40 @@ def login():
                                 Label_Frame = Frame(frame2, bg="#134B70")
                                 Label_Frame.pack(side=TOP, pady=(10, 10))
 
-                                lb = Label(Label_Frame, text="Tạo Nhóm Học Phần", bg="#134B70", fg="#FDFFE2", font=("Times New Roman", 20, "bold"), padx=15, pady=15, borderwidth=5, relief=RIDGE)
+                                lb = Label(Label_Frame, text="Create Class", bg="#134B70", fg="#FDFFE2", font=("Times New Roman", 20, "bold"), padx=15, pady=15, borderwidth=5, relief=RIDGE)
                                 lb.pack()
 
                                 form_frame = Frame(frame2, bg = "#577B8D")
                                 form_frame.pack(fill=BOTH, expand=True, padx=10, pady=(10, 50))  # Thêm padding phía dưới
-                                lb1 = Label(form_frame, text="Mã Học Phần", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                                lb1 = Label(form_frame, text="Course Code", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                                 lb1.place(x=x_label, y=50)
                                 ipt1 = Entry(form_frame, state="disabled", textvariable = co_code, width=35, font=("italic", 13, "bold"))
                                 ipt1.place(x=x_entry, y=50)
 
-                                lb2 = Label(form_frame, text="Tên Học Phần", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                                lb2 = Label(form_frame, text="Course Name", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                                 lb2.place(x=x_label, y=100)
                                 ipt2 = Entry(form_frame, state="disabled", textvariable = co_name, width=35, font=("italic", 12, "bold"))
                                 ipt2.place(x=x_entry, y=100)
 
-                                lb3 = Label(form_frame, text="Năm Học", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                                lb3 = Label(form_frame, text="Year", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                                 lb3.place(x=x_label, y=150)
                                 ipt3 = Entry(form_frame, state="disabled",  textvariable = school_year, width=35, font=("italic", 12, "bold"))
                                 ipt3.place(x=x_entry, y=150)
 
-                                lb4 = Label(form_frame, text="Học Kỳ", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                                lb4 = Label(form_frame, text="Semester", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                                 lb4.place(x=x_label, y=200)
                                 ipt4 = Entry(form_frame, state="disabled", textvariable = se, width=35, font=("italic", 12, "bold"))
                                 ipt4.place(x=x_entry, y=200)
                                 
-                                lb5 = Label(form_frame, text="Chọn Nhóm", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                                lb5 = Label(form_frame, text="Select Class", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                                 lb5.place(x=x_label, y=250)
 
                                 class_options = ["M01", "M02", "M03", "M04"]
                                 ipt5 = ttk.Combobox(form_frame, values=class_options, state="readonly", width=33, font=("italic", 13, "bold"))
-                                ipt5.set("Chọn Nhóm")
+                                ipt5.set("Select Class")
                                 ipt5.place(x=x_entry , y=250)  
 
-                                lb6 = Label(form_frame, text="Nhập Số Lượng", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                                lb6 = Label(form_frame, text="Amount", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                                 lb6.place(x=x_label, y=300)
                                 ipt6 = Entry(form_frame, width=35, font=("italic", 13, "bold"))
                                 ipt6.place(x=x_entry, y=300)
@@ -700,10 +700,10 @@ def login():
                                     table1.column(col, width=150)
                                 
                                 # Set specific headings and column widths
-                                table1.heading("course_code", text="Mã Học Phần", anchor='w')
-                                table1.heading('course_name', text="Tên Học Phần", anchor='w')
-                                table1.heading("ay_schoolYear", text="Năm Học", anchor='w')
-                                table1.heading("se_ID", text="Học Kỳ", anchor='w')
+                                table1.heading("course_code", text="Course Code", anchor='w')
+                                table1.heading('course_name', text="Course Name", anchor='w')
+                                table1.heading("ay_schoolYear", text="Year", anchor='w')
+                                table1.heading("se_ID", text="Semester", anchor='w')
 
                                 table1.column("course_code", width=100, anchor='w')
                                 table1.column("course_name", width=250, anchor='w')

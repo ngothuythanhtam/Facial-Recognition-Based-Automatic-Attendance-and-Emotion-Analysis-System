@@ -79,6 +79,8 @@ create table accounts (
     foreign key (role_ID) references roles (role_ID)
 );
 
+SELECT * FROM accounts;
+
 -- Năm Học
 create table years (
     ay_schoolYear varchar(255) not null primary key
@@ -359,6 +361,12 @@ select * from roles;
 drop table accounts;
 select * from attendance;
 select * from semester;
+
+alter table instructor 
+add column avatar varchar(255);
+ 
+alter table students 
+add column avatar varchar(255);
 
 select c.clCourse_code, cfa.course_code, s.st_code from classcourse c 
 	join coursefollowacayear cfa on c.cfa_ID = cfa.cfa_ID
