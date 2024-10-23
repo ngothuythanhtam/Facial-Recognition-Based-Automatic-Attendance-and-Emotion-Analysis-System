@@ -61,8 +61,9 @@ create table administrator (
 );
 
 select * from administrator;
-insert into administrator (ad_code, ad_name, ad_rank, ad_phoneNumber, ad_gmail) value ('admin', 'Khúc Bảo Minh', 'B.Sc.', '0890765124', 'kbminh@gmail.com');
-
+insert into administrator (ad_code, ad_name, ad_phoneNumber, ad_gmail) value ('admin', 'Khúc Bảo Minh', '0890765124', 'kbminh@gmail.com');
+alter table administrator add column ad_gmail varchar(255) unique;
+alter table administrator drop column ad_pass;
 select ad_code, ad_name, ad_rank, ad_phoneNumber, ad_gmail from administrator where ad_code = 'admin';
 -- Vai Trò
 create table roles (
