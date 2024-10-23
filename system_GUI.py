@@ -63,7 +63,7 @@ def connect():
     try:
         host = 'localhost'
         user = 'root'
-        password_db = 'mysql'
+        password_db = 'orcl'
         database = 'face_recognition'
         conn = pymysql.connect(host=host, user=user, password=password_db, database=database)
         print('Connection successful')
@@ -149,49 +149,46 @@ def login():
 
                                 ##### Import data to the 'courses' table in MySQL #####
                                 def import_courses(file_paths):
-                                    conn = connect()
-                                    if conn:
-                                        cur = conn.cursor()
-                                        if not file_paths:
-                                            messagebox.showerror("Error","No files selected for import.", parent=import_window)
-                                            return
-                                        try:
-                                            with cur:
-                                                for file_path in file_paths:
-                                                    df = pd.read_excel(file_path, sheet_name='Sheet1')
+                                    if not file_paths:
+                                        messagebox.showerror("Error","No files selected for import.", parent=import_window)
+                                        return
+                                    try:
+                                        with cur:
+                                            for file_path in file_paths:
+                                                df = pd.read_excel(file_path, sheet_name='Sheet1')
 
-                                                    # Remove unnecessary columns
-                                                    cols = ['STT', 'Năm học', 'HK']
-                                                    df.drop(cols, inplace=True, axis=1)
+                                                # Remove unnecessary columns
+                                                cols = ['STT', 'Năm học', 'HK']
+                                                df.drop(cols, inplace=True, axis=1)
 
-                                                    # Rename the colums in Excel to match with database
-                                                    df.rename(columns={
-                                                        'Mã HP': 'course_code',
-                                                        'Tên học phần': 'course_name',
-                                                        'Số TC': 'course_credits',
-                                                        'Mã ngành': 'maj_Code'
-                                                    }, inplace=True)
+                                                # Rename the colums in Excel to match with database
+                                                df.rename(columns={
+                                                    'Mã HP': 'course_code',
+                                                    'Tên học phần': 'course_name',
+                                                    'Số TC': 'course_credits',
+                                                    'Mã ngành': 'maj_Code'
+                                                }, inplace=True)
 
-                                                    if 'maj_Code' not in df.columns:
-                                                        raise ValueError("Required column 'maj_Code' is missing in the Excel file.")
+                                                if 'maj_Code' not in df.columns:
+                                                    raise ValueError("Required column 'maj_Code' is missing in the Excel file.")
 
-                                                    # convert type of courses_credits
-                                                    df['course_credits'] = df['course_credits'].astype(int)
-                                                    df = df[['course_code', 'course_name', 'course_credits', 'maj_Code']]
+                                                # convert type of courses_credits
+                                                df['course_credits'] = df['course_credits'].astype(int)
+                                                df = df[['course_code', 'course_name', 'course_credits', 'maj_Code']]
 
-                                                    insert_query = """
-                                                    INSERT INTO courses (course_code, course_name, course_credits, maj_Code)
-                                                    VALUES (%s, %s, %s, %s)
-                                                    """
-                                                    for index, row in df.iterrows():
-                                                        cur.execute(insert_query, (row['course_code'], row['course_name'], row['course_credits'], row['maj_Code']))
-                                                conn.commit()
-                                                messagebox.showinfo("Success", "Data imported successfully into the 'courses' table.", parent=import_window)
-                                                
-                                        except Exception as e:
-                                            messagebox.showerror("Error", f"An error occurred: {e}", parent=import_window)
-                                            print(f"An error occurred: {e}")
-                                            conn.rollback()
+                                                insert_query = """
+                                                INSERT INTO courses (course_code, course_name, course_credits, maj_Code)
+                                                VALUES (%s, %s, %s, %s)
+                                                """
+                                                for index, row in df.iterrows():
+                                                    cur.execute(insert_query, (row['course_code'], row['course_name'], row['course_credits'], row['maj_Code']))
+                                            conn.commit()
+                                            messagebox.showinfo("Success", "Data imported successfully into the 'courses' table.", parent=import_window)
+                                            
+                                    except Exception as e:
+                                        messagebox.showerror("Error", f"An error occurred: {e}", parent=import_window)
+                                        print(f"An error occurred: {e}")
+                                        conn.rollback()
                                 
                                 ##### Import data to the 'courseFollowAcaYear' table in MySQL #####
                                 def import_courseFollowAcaYear(file_paths):
@@ -239,6 +236,7 @@ def login():
                                         conn.rollback()
                                     
                                 ##### Import data to the 'studying' table in MySQL #####
+                                
                                 def import_studying():
                                     try:
                                         paths = StringVar()
@@ -332,7 +330,7 @@ def login():
                                                 print(f"Error in search_class: {e}")
                                                 print(f"Error type: {type(e)}")
                                                 print(f"Error args: {e.args}")
-                                                class_combobox.set("Finding fail")
+                                                class_combobox.set("Lỗi khi tìm kiếm")
                                                 return
 
                                             if class_data:
@@ -507,16 +505,16 @@ def login():
                                 def search_by_year_se():
                                     sem_id = se_options.get(search_sem.get())
                                     year = search_year.get()
-                                    if search_year.get() == "Chọn Năm Học" and search_sem.get() == "Chọn Học Kỳ":
+                                    if search_year.get() == "Select Year" and search_sem.get() == "Select Semester":
                                         messagebox.showwarning('Input Error', 'Please select either Year or Semester')
                                         return
-                                    if search_year.get() == "Chọn Năm Học":
+                                    if search_year.get() == "Select Year":
                                         cur.execute("""SELECT cfa.course_code, c.course_name, cfa.ay_schoolYear, s.se_semesterName
                                                     FROM coursefollowacayear cfa
                                                     JOIN courses c ON cfa.course_code = c.course_code
                                                     JOIN semester s ON cfa.se_ID = s.se_ID
                                                     WHERE cfa.se_ID = %s""", (sem_id,))
-                                    elif search_sem.get() == "Chọn Học Kỳ":
+                                    elif search_sem.get() == "Select Semester":
                                         cur.execute("""SELECT cfa.course_code, c.course_name, cfa.ay_schoolYear, s.se_semesterName
                                                     FROM coursefollowacayear cfa
                                                     JOIN courses c ON cfa.course_code = c.course_code
@@ -540,8 +538,8 @@ def login():
                                         
                                 # clear data
                                 def clear():
-                                    search_year.set("Chọn Năm Học")
-                                    search_sem.set("Chọn Học Kỳ")   
+                                    search_year.set("Select Year")
+                                    search_sem.set("Select Semester")   
                                     display()
                                     
                             # Clear 
@@ -625,8 +623,8 @@ def login():
                                 search_sem = ttk.Combobox(search_frame, values=list(se_options.keys()), state="readonly", width=20, style='Custom.TCombobox', height=25)
                                 search_sem.pack(side=LEFT, padx=10, pady=10)
                                 # Đặt giá trị mặc định cho Combobox (tùy chọn)
-                                search_year.set("Chọn Năm Học")
-                                search_sem.set("Chọn Học Kỳ")
+                                search_year.set("Select Year")
+                                search_sem.set("Select Semester")
                                 #btn
                                 button_frame = Frame(search_frame, bg="#577B8D")
                                 button_frame.pack(side=LEFT)
@@ -650,40 +648,40 @@ def login():
                                 Label_Frame = Frame(frame2, bg="#134B70")
                                 Label_Frame.pack(side=TOP, pady=(10, 10))
 
-                                lb = Label(Label_Frame, text="Tạo Nhóm Học Phần", bg="#134B70", fg="#FDFFE2", font=("Times New Roman", 20, "bold"), padx=15, pady=15, borderwidth=5, relief=RIDGE)
+                                lb = Label(Label_Frame, text="Create Class", bg="#134B70", fg="#FDFFE2", font=("Times New Roman", 20, "bold"), padx=15, pady=15, borderwidth=5, relief=RIDGE)
                                 lb.pack()
 
                                 form_frame = Frame(frame2, bg = "#577B8D")
                                 form_frame.pack(fill=BOTH, expand=True, padx=10, pady=(10, 50))  # Thêm padding phía dưới
-                                lb1 = Label(form_frame, text="Mã Học Phần", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                                lb1 = Label(form_frame, text="Course Code", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                                 lb1.place(x=x_label, y=50)
                                 ipt1 = Entry(form_frame, state="disabled", textvariable = co_code, width=35, font=("italic", 13, "bold"))
                                 ipt1.place(x=x_entry, y=50)
 
-                                lb2 = Label(form_frame, text="Tên Học Phần", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                                lb2 = Label(form_frame, text="Course Name", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                                 lb2.place(x=x_label, y=100)
                                 ipt2 = Entry(form_frame, state="disabled", textvariable = co_name, width=35, font=("italic", 12, "bold"))
                                 ipt2.place(x=x_entry, y=100)
 
-                                lb3 = Label(form_frame, text="Năm Học", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                                lb3 = Label(form_frame, text="Year", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                                 lb3.place(x=x_label, y=150)
                                 ipt3 = Entry(form_frame, state="disabled",  textvariable = school_year, width=35, font=("italic", 12, "bold"))
                                 ipt3.place(x=x_entry, y=150)
 
-                                lb4 = Label(form_frame, text="Học Kỳ", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                                lb4 = Label(form_frame, text="Semester", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                                 lb4.place(x=x_label, y=200)
                                 ipt4 = Entry(form_frame, state="disabled", textvariable = se, width=35, font=("italic", 12, "bold"))
                                 ipt4.place(x=x_entry, y=200)
                                 
-                                lb5 = Label(form_frame, text="Chọn Nhóm", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                                lb5 = Label(form_frame, text="Select Class", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                                 lb5.place(x=x_label, y=250)
 
                                 class_options = ["M01", "M02", "M03", "M04"]
                                 ipt5 = ttk.Combobox(form_frame, values=class_options, state="readonly", width=33, font=("italic", 13, "bold"))
-                                ipt5.set("Chọn Nhóm")
+                                ipt5.set("Select Class")
                                 ipt5.place(x=x_entry , y=250)  
 
-                                lb6 = Label(form_frame, text="Nhập Số Lượng", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
+                                lb6 = Label(form_frame, text="Amount", bg="#577B8D", fg="#FDFFE2", font=("italic", 13, "bold"))
                                 lb6.place(x=x_label, y=300)
                                 ipt6 = Entry(form_frame, width=35, font=("italic", 13, "bold"))
                                 ipt6.place(x=x_entry, y=300)
@@ -702,10 +700,10 @@ def login():
                                     table1.column(col, width=150)
                                 
                                 # Set specific headings and column widths
-                                table1.heading("course_code", text="Mã Học Phần", anchor='w')
-                                table1.heading('course_name', text="Tên Học Phần", anchor='w')
-                                table1.heading("ay_schoolYear", text="Năm Học", anchor='w')
-                                table1.heading("se_ID", text="Học Kỳ", anchor='w')
+                                table1.heading("course_code", text="Course Code", anchor='w')
+                                table1.heading('course_name', text="Course Name", anchor='w')
+                                table1.heading("ay_schoolYear", text="Year", anchor='w')
+                                table1.heading("se_ID", text="Semester", anchor='w')
 
                                 table1.column("course_code", width=100, anchor='w')
                                 table1.column("course_name", width=250, anchor='w')
@@ -967,7 +965,7 @@ def login():
                                                 mail = smail_var.get()
                                                 name = sname_var.get()
                                                 sclass = sclass_var.get()
-                                                regex = r'^[a-zA-Z]+[Bb]\d{7}@student\.ctu\.edu\.vn'
+                                                regex = '^[a-zA-Z]+[Bb]\d{7}@student\.ctu\.edu\.vn'
                                                 if(re.search(regex, mail)):
                                                     cur.execute("update students set st_fullName = %s, st_email = %s, cl_className = %s where st_code = %s",(name, mail, sclass,code))
                                                     conn.commit()
@@ -1338,16 +1336,25 @@ def login():
                                         else:
                                             print("Instructor name not found")
                                         
-                                        # The directory to store the attendance files
+                                        # Create a directory to store the attendance files
+                                        # directory = 'attendance_files'
+                                        # course_dir = f'attendance_files/{course_code}/'
+                                        # group_dir = f'attendance_files/{course_code}/{group_code}/'
                                         base_dir = "attendance_files"
                                         group_path = os.path.join(base_dir, course_code, group_code)
+                                        # if not os.path.exists(directory):
+                                        #     os.makedirs(directory)
+                                        # elif not os.path.exists(course_dir):
+                                        #     os.makedirs(course_dir)
+                                        # elif not os.path.exists(group_dir):
+                                        #     os.makedirs(group_dir)
 
                                         # Generate a timestamped filename
                                         date_att = datetime.now().strftime('%d-%m-%Y')
                                         file_name = f'{course_code}_{group_code}_{date_att}.xlsx'
                                         file_path = os.path.join(group_path, file_name)
 
-                                         # Create a new Excel file
+                                        # Create a new Excel file
                                         workbook = openpyxl.Workbook()
                                         sheet = workbook.active
                                         if sheet is not None:
@@ -1379,6 +1386,10 @@ def login():
                                             json_file.seek(0)
                                             json.dump(data, json_file, indent=4)
 
+                                        # Update JSON file with the new file path
+                                        # data = {"attendance_file_path": file_path}
+                                        # with open(json_path, 'w') as json_file:
+                                        #     json.dump(data, json_file)
                                         print(f"New Excel file created at {file_path} and JSON updated.")
                                         return file_path
                                     
@@ -1390,7 +1401,7 @@ def login():
                                     try:
                                         file_path = get_excel()
                                         if not file_path:
-                                            messagebox.showerror("Error", "File Excel not found!.", parent=main_frame)
+                                            messagebox.showinfo("Thông báo", "Không tìm thấy file Excel hoặc chưa chọn khóa học/nhóm.", parent=main_frame)
                                             return
 
                                         def get_class(event=None):
@@ -1466,12 +1477,12 @@ def login():
                                     if course_code == "Choose Course" or course_code == "" or group_code == "Choose Group" or group_code == "":
                                         messagebox.showerror("Error", "Please select both a course and a group!", parent = face_window)
                                         return
-                                    
                                     base_dir = "attendance_files"
                                     group_path = os.path.join(base_dir, course_code, group_code)
 
                                     if not os.path.exists(group_path):
                                         os.makedirs(group_path)
+                                    
                                     # Update the Excel file path in JSON and save course and group data
                                     excel_file_path = update_json_with_excel_path(course_code, group_code)
 
@@ -1528,7 +1539,7 @@ def login():
                                         print(f"Error finding Excel file: {str(e)}")
                                         messagebox.showerror("Error", f"Error finding Excel file: {str(e)}", parent=face_window)
                                         return None
-
+                                    
                                 face_window = Toplevel()
                                 face_window.title("Face Recognizer Page")
                                 face_window.state('zoomed')
@@ -1641,7 +1652,7 @@ def login():
                                         # data = {"emo_file_path": file_path}
                                         json_path = 'emotion/emo_info.json'
 
-                                         # Check if the JSON file exists, create if it doesn't
+                                        # Check if the JSON file exists, create if it doesn't
                                         if not os.path.exists(json_path):
                                             with open(json_path, 'w') as json_file:
                                                 json.dump({}, json_file)
@@ -1805,7 +1816,7 @@ def login():
                                     try:
                                         file_path = get_excel()
                                         if not file_path:
-                                            messagebox.showerror("Error", "File excel not found!", parent=main_frame)
+                                            messagebox.showinfo("Thông báo", "Không tìm thấy file Excel hoặc chưa chọn khóa học/nhóm.", parent=main_frame)
                                             return
 
                                         def get_class(event=None):
@@ -1996,6 +2007,7 @@ def login():
                         if conn:
                             cur = conn.cursor()
                             try: 
+
                                 # Hàm lấy dữ liệu về học phần - lớp
                                 def search_course():
                                     cur.execute("select cfa_ID, course_code from courseFollowAcaYear where course_code LIKE '%_H';;")
@@ -2064,7 +2076,7 @@ def login():
                                             for file in excel_files:
                                                 file_listbox.insert(tk.END, file)
                                                 file_listbox.insert(tk.END, "")  # Add an empty row for spacing
-                                
+                                        
                                     except Exception as e:
                                         print(f"Error: {e}")
                                         print(f"Error type: {type(e)}")
@@ -2205,6 +2217,7 @@ def login():
                                                         where ins_instructorCode = %s
                                                         """, (username_var.get(),))
                                             data = cur.fetchall()
+
                                             if data:
                                                 print("Debug - Fetched data:", data)  # Debug print
                                                 # Fetch the first row (assuming there is one)
@@ -2246,10 +2259,11 @@ def login():
                                         except pymysql.Error as e:
                                             conn.rollback()
                                             messagebox.showerror("Error", f"An error occurred: {str(e)}", parent=account_window)
-                 
+                                        finally:
+                                            cur.close()  # Ensure the cursor is closed
+                                            conn.close()  # Ensure the connection is closed
                                     else:
                                         messagebox.showerror("Error", "Please select a course create_class_window", parent=account_window)
-
                                 def back():
                                     account_window.destroy()
                                 back_btn = Button(account_window, text="Back", font=('Times new Roman', 15), fg='#E7F6F2', bg='#2C3333', height=1, width=7, command=back)
@@ -2285,7 +2299,6 @@ def login():
                                 save_btn = Button(frame, text = "Save", bg = "#40679E",fg="#FDFFE2", height = "1", width = "8", font = ("Times new Roman", 18 , "bold"), command=update_data).place(x = 298, y = 410)
                                 # Call display() function to populate the fields
                                 display()
-
                             except pymysql.err.OperationalError as e:
                                 messagebox.showerror( "Error","Sql Connection Error... Open Xamp Control Panel and then start MySql Server ")
                             except Exception as e:
@@ -2321,6 +2334,7 @@ def login():
                                                         where ad_code = %s
                                                         """, (username_var.get(),))
                                             data = cur.fetchall()
+
                                             if data:
                                                 print("Debug - Fetched data:", data)  # Debug print
                                                 # Fetch the first row (assuming there is one)
@@ -2361,10 +2375,11 @@ def login():
                                         except pymysql.Error as e:
                                             conn.rollback()
                                             messagebox.showerror("Error", f"An error occurred: {str(e)}", parent=admin_window)
-                                        
+                                        finally:
+                                            cur.close()  # Ensure the cursor is closed
+                                            conn.close()  # Ensure the connection is closed
                                     else:
                                         messagebox.showerror("Error", "Please select a course create_class_window", parent=admin_window)
-
                                 def back():
                                     admin_window.destroy()
                                 back_btn = Button(admin_window, text="Back", font=('Times new Roman', 15), fg='#E7F6F2', bg='#2C3333', height=1, width=7, command=back)
@@ -2397,7 +2412,6 @@ def login():
 
                                 save_btn = Button(frame, text = "Save", bg = "#40679E",fg="#FDFFE2", height = "1", width = "8", font = ("Times new Roman", 18 , "bold"), command=update_data).place(x = 298, y = 360)
                                 display()
-
                             except pymysql.err.OperationalError as e:
                                 messagebox.showerror( "Error","Sql Connection Error... Open Xamp Control Panel and then start MySql Server ", parent = admin_window)
                             except Exception as e:
@@ -2447,7 +2461,7 @@ def login():
                         gallery_btn.place(x = x1, y = 520)
 
                         admin_img = ImageTk.PhotoImage(Image.open('./img/admin.png').resize((190, 180), Image.LANCZOS))
-                        account_btn = Button(window, image = admin_img , text = "Account", font = ("Times new roman", 16), fg = "#344C64", height = 250, width= 275, compound = BOTTOM, command=instructor_accounts) 
+                        account_btn = Button(window, image = admin_img , text = "Admin Account", font = ("Times new roman", 16), fg = "#344C64", height = 250, width= 275, compound = BOTTOM, command=instructor_accounts) 
                         account_btn.place(x = x2, y = 520)
 
                         logout_img = ImageTk.PhotoImage(Image.open('./img/logout.png').resize((190, 180), Image.LANCZOS))
