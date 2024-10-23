@@ -150,9 +150,9 @@ def fromfiles(
         anti_spoofing=anti_spoofing,
     ) 
 
-db_path="face-db"
-source_path="test1"
-dest_path="test2"
+db_path="./face-db"
+source_path="./test1"
+dest_path="./hinh2"
 # models = [
 #   "VGG-Face", 
 #   "Facenet", 
@@ -178,4 +178,4 @@ dest_path="test2"
 #Theo dõi trạng thái cảm xúc set enable_face_analysis=True, 15s chụp cảm xúc, thống kê bao nhiêu khuôn mặt
 
 # fromfiles(db_path=db_path, source_dir=source_path, dest_dir=dest_path, enable_face_analysis=False, model_name="Facenet", detector_backend="opencv", anti_spoofing=False)
-# fromfiles(db_path=db_path, source_dir=source_path, dest_dir=dest_path, enable_face_analysis=True, model_name="ArcFace", detector_backend="retinaface", anti_spoofing=False)
+fromfiles(db_path=db_path, source_dir=source_path, dest_dir=dest_path, enable_face_analysis=True, model_name="ArcFace", detector_backend="retinaface", anti_spoofing=False)
