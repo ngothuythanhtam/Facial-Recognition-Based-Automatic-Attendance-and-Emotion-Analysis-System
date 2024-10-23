@@ -1,4 +1,7 @@
 import requests
+import openpyxl
+from datetime import datetime
+import json
 import os
 import time
 from typing import List, Tuple, Optional
@@ -19,9 +22,73 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 # phone_cam = 'https://192.168.100.121:8080/video'
 
-URL = "http://192.168.100.135:8080/video"
+URL = "http://192.168.100.135:8080/video" #change this
 IDENTIFIED_IMG_SIZE = 112
 TEXT_COLOR = (255, 255, 255)
+
+def get_excel_file_path() -> str:
+    try:
+        with open('attendance_files/attendance_info.json', 'r') as config_file:
+            config = json.load(config_file)
+            file_path = config.get("attendance_file_path")
+            if file_path and isinstance(file_path, str):
+                return file_path
+            else:
+                raise ValueError("Invalid file path in configuration.")
+    except (FileNotFoundError, ValueError) as e:
+        print(f"Error retrieving file path: {str(e)}")
+        return 'attendance.xlsx'  # Fallback to a default path
+
+def mark_attendance(label: str, file_path: str = '', sheet_name: str = 'Sheet'):
+    if not file_path:
+        file_path = get_excel_file_path()
+
+    # Ensure file_path is a string
+    if not isinstance(file_path, str): raise TypeError("file_path must be a string.")
+    """
+    Record the label name and current time in the Excel file, only record it once for each student code.
+    Args:
+        label (str): Label name to write.
+        file_path (str): Path to Excel file (default is 'attendance.xlsx').
+        sheet_name (str): Name of the sheet to record (default is 'Sheet').
+    """
+    try:
+        # Mở hoặc tạo mới workbook
+        workbook = openpyxl.load_workbook(file_path) if os.path.exists(file_path) else openpyxl.Workbook()
+
+        # Chọn hoặc tạo sheet
+        if sheet_name in workbook.sheetnames:
+            sheet = workbook[sheet_name]
+        else:
+            sheet = workbook.create_sheet(sheet_name)
+
+        # Kiểm tra xem label đã tồn tại trong cột A hay chưa
+        label_exists = False
+        for row in sheet.iter_rows(min_row=1, max_row=sheet.max_row, min_col=1, max_col=1):
+            for cell in row:
+                if cell.value == label:
+                    label_exists = True
+                    break
+            if label_exists:
+                break
+
+        if not label_exists:
+            # Nếu label chưa tồn tại, ghi label và thời gian mới
+            next_row = sheet.max_row + 1
+            time_att = datetime.now().strftime('%H:%M:%S')
+            date_att = datetime.now().strftime('%d-%m-%Y')
+            sheet.cell(row=next_row, column=1, value=label)
+            sheet.cell(row=next_row, column=2, value=time_att)
+            sheet.cell(row=next_row, column=3, value=date_att)
+
+            # Lưu workbook
+            workbook.save(file_path)
+            print(f"Label '{label}' và thời gian '{time_att}' đã được ghi vào {file_path} trong sheet '{sheet_name}'.")
+        else:
+            print(f"Label '{label}' đã tồn tại, không ghi thêm.")
+
+    except Exception as e:
+        print(f"Không thể ghi label vào file Excel. Lỗi: {str(e)}")
 
 # pylint: disable=unused-variable
 def analysis(
@@ -551,6 +618,8 @@ def overlay_identified_face(
         img (np.ndarray): image with overlayed identity
     """
     try:
+        label = label.split("\\")[-2]
+        mark_attendance(label)
         if y - IDENTIFIED_IMG_SIZE > 0 and x + w + IDENTIFIED_IMG_SIZE < img.shape[1]:
             # top right
             img[
