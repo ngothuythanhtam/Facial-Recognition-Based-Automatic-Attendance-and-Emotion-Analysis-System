@@ -1,0 +1,246 @@
+main .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+    background: rgb(249, 238, 175);
+    overflow: auto;
+    padding: 30px 30px 30px 0;
+    width: 900px;
+}
+
+.profile-card .avtprofile {
+    /* margin: 80px 80px 80px 80px; */
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profile-card form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    /* overflow: hidden; */
+    justify-self: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-card form .form-group {
+    display: flex;
+    /* overflow: hidden; */
+    align-items: center;
+    margin-top: 30px;
+    /* margin-bottom: 20px; */
+}
+
+.profile-card form .form-group label {
+    margin-right: 120;
+    /* Khoảng cách giữa label và input */
+    min-width: 150px;
+    /* Đặt chiều rộng tối thiểu cho label, điều chỉnh nếu cần */
+
+}
+
+.profile-card form .form-group input {
+    padding: 0 20px 0 20px;
+    width: 300px;
+}
+
+.avatar-img {
+    width: 200px;
+    height: 205px;
+    border-radius: 50%;
+    object-fit: cover;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.avatar-img:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+#uploadImg {
+    width: 250px;
+    margin-left: 80px;
+}
+
+/* change avatar button */
+#changeAvatar {
+    width: 120px;
+    height: 50px;
+    border: none;
+    border-radius: 20px;
+    background-color: rgb(72, 149, 243);
+    color: white;
+    font-size: 15px;
+    transition: 0.3s ease-in-out;
+    padding: 0 5px 0 5px;
+    margin-top: 20px;
+}
+
+#changeAvatar:hover {
+    transform: scale(1.1, 1.1);
+    background-color: rgb(103, 151, 218);
+    box-shadow: 0 0 120 rgb(13, 178, 249);
+}
+
+input[type="file"]::file-selector-button {
+    /* margin-right: 20px; */
+    border: none;
+    background: #084cdfc2;
+    padding: 10px;
+    border-radius: 10px;
+    color: #fff;
+    cursor: pointer;
+    transition: .2s ease-in-out;
+    margin: 10px;
+}
+
+input[type=file]::file-selector-button:hover {
+    transform: scale(1.1, 1.1);
+    background-color: rgb(103, 151, 218);
+    box-shadow: 0 0 120 rgb(13, 178, 249);
+}
+
+#uploadBtn {
+    width: 100px;
+    height: 40px;
+    border: none;
+    border-radius: 20px;
+    background-color: rgb(72, 149, 243);
+    color: white;
+    font-size: 15px;
+    transition: 0.3s ease-in-out;
+    padding: 0 5px 0 5px;
+    margin-top: 10px;
+}
+
+#uploadBtn:hover {
+    transform: scale(1.1, 1.1);
+    background-color: rgb(103, 151, 218);
+    box-shadow: 0 0 120 rgb(13, 178, 249);
+}
+
+.form-control[readonly] {
+    font-weight: 400px;
+    padding: 120px;
+    height: 40px;
+    border: none;
+    color: #373a3d;
+    cursor: not-allowed;
+    font-size: 16px;
+}
+
+.form-control {
+    font-weight: 400px;
+    padding: 120px;
+    height: 40px;
+    border: none;
+    color: #373a3d;
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 20px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+#profileForm .form-control {
+    font-weight: 400px;
+    /* padding: 100px; */
+    height: 40px;
+    border: white;
+    color: #373a3d;
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 20px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.form-control:focus {
+    background-color: #f1f1f1;
+    border-color: #6c757d;
+}
+
+.alert {
+    background-color: #4aefa5 !important;
+    /* Light gray background */
+    color: #333 !important;
+    /* Dark gray text */
+    border-radius: 30px !important;
+    /* Rounded corners */
+    padding: 20px 30px;
+    /* Padding for spacing */
+    /* margin-bottom: 20px !important; */
+    margin-top: 30px;
+}
+
+.alert-success {
+    background-color: #d3ffd3 !important;
+    /* Light green background */
+    color: #333 !important;
+    /* Dark gray text */
+
+}
+
+.alert-danger {
+    background-color: #ffd3d3 !important;
+    /* Light red background */
+    color: #333 !important;
+    /* Dark gray text */
+}
+
+.alert p {
+    font-size: 15px;
+    text-align: center !important;
+    /* Center text */
+    margin: 0 !important;
+    /* Remove default margin */
+}
+
+.btn-custom {
+    border: none;
+    padding: 20px;
+    border-radius: 40px;
+    background: rgb(72, 149, 243);
+    color: rgb(254, 254, 252);
+    font-weight: 500px;
+    font-size: 18px;
+    transition: 0.3s ease-in-out;
+    margin: 0;
+    width: 130px;
+    cursor: pointer;
+}
+
+.btn-custom:hover {
+    transform: scale(1.1, 1.1);
+    background-color: rgb(103, 151, 218);
+    box-shadow: 0 0 120 rgb(13, 178, 249);
+}
+
+.buttonprofile {
+    padding: 20px;
+}
+
+.profile-card::-webkit-scrollbar {
+    width: 12px;
+}
+
+.profile-card::-webkit-scrollbar-thumb {
+    background-color: #ced4da;
+    border-radius: 15px;
+}
+
+.profile-card::-webkit-scrollbar-track {
+    background: transparent;
+}

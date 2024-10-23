@@ -1,0 +1,176 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f0f2f5;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background: linear-gradient(135deg, #ffffff, #f9f9f9);
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Center the filter form and search bar */
+form,
+.form-group,
+.form-group > * {
+    margin: 0 auto;
+    text-align: center;
+}
+
+form {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+}
+
+label {
+    margin-bottom: 5px; 
+}
+
+.form-control {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    width: 60%; 
+    max-width: 400px; 
+}
+
+.form-control:hover,
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+    outline: none;
+}
+
+/* Filter Styles */
+select#filter {
+    width: 100%; 
+    max-width: 400px; 
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 1px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+select#filter:hover,
+select#filter:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+    outline: none;
+}
+
+/* Search Bar Styles */
+#search-username {
+    width: 60%; 
+    max-width: 400px; 
+}
+
+#search-btn {
+    margin-top: 20px;
+    margin-bottom: 15px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+#search-btn:hover {
+    background: #0056b3;
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+table th,
+table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+table th {
+    background: #007bff;
+    color: white;
+    font-weight: bold;
+    border-top: 1px solid #007bff;
+}
+
+table tr:hover {
+    background: #f1f1f1;
+    transition: background 0.3s ease;
+}
+
+/* Popup Styles */
+.ui-dialog {
+    background: linear-gradient(135deg, #ffffff, #f9f9f9);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ui-dialog-titlebar {
+    display: flex;
+    justify-content: center; 
+    background-color: #007bff;
+    color: white;
+}
+
+.ui-dialog-title {
+    flex-grow: 1; /* Center the title in the dialog */
+    text-align: center;
+}
+
+.ui-dialog-titlebar-close {
+    margin-left: auto;
+}
+
+.ui-dialog-titlebar-close .ui-button {
+    background-color: #ffffff;
+    color: #007bff;
+    border: 1px solid #007bff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    font-size: 14px;
+    line-height: 24px;
+    text-align: center;
+}
+
+.ui-dialog-titlebar-close .ui-button:hover {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+#profile-popup {
+    text-align: center; /* Center the content within the popup */
+    padding: 20px;
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Add a smooth fade-in effect */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
