@@ -82,7 +82,7 @@ def stream(
     frame_threshold = max(frame_threshold, 1)
     print("Indexing "+db_path)
 
-    phone.analysis(
+    files.analysis(
         db_path=db_path,
         model_name=model_name,
         detector_backend=detector_backend,
@@ -139,7 +139,7 @@ def fromfiles(
 
     print("Indexing "+db_path)
 
-    phone.analysis(
+    files.analysis(
         db_path=db_path,
         source_dir=source_dir,
         dest_dir=dest_dir,

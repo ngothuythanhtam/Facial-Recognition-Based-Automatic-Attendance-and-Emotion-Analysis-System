@@ -152,7 +152,7 @@ def analysis(
     num_frames_with_faces = 0
     tic = time.time()
 
-    cap = cv2.VideoCapture(URL)
+    cap = cv2.VideoCapture(1)
     while True:
         has_frame, img = cap.read()
         if not has_frame:

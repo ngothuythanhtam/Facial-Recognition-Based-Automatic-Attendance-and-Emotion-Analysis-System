@@ -23,6 +23,7 @@ import pandas as pd
 import unicodedata
 import dlib
 import face_analysis
+import face_analysis_emo
 import openpyxl
 import json
 from tkinter import messagebox, simpledialog
@@ -155,7 +156,7 @@ def login():
                                     try:
                                         with cur:
                                             for file_path in file_paths:
-                                                df = pd.read_excel(file_path, sheet_name='Sheet1')
+                                                df = pd.read_excel(file_path, sheet_name='DSHP')
 
                                                 # Remove unnecessary columns
                                                 cols = ['STT', 'Năm học', 'HK']
@@ -198,7 +199,7 @@ def login():
                                     try:
                                         with cur:
                                             for file_path in file_paths:
-                                                df = pd.read_excel(file_path, sheet_name='Sheet1')
+                                                df = pd.read_excel(file_path, sheet_name='DSHP')
 
                                                 # Remove unnecessary columns
                                                 cols = ['STT', 'Tên học phần', 'Số TC', 'Mã ngành']
@@ -377,7 +378,38 @@ def login():
                                         messagebox.showerror("Error", f"An error occurred: {e}", parent=import_window)
                                         conn.rollback()
                                     
-                                ######################################## Import data page ###################################
+                                
+                                            
+                                ##### Import data to the 'students' table in MySQL #####
+                                def import_account(file_paths):
+                                    if not file_paths:
+                                        messagebox.showerror("Error", "No files selected for import.", parent=import_window)
+                                        return
+                                    try:
+                                        with cur:
+                                            for file_path in file_paths:
+                                                df = pd.read_excel(file_path, sheet_name='Sheet1')
+                                                
+                                                # Rename the colums in Excel to match with the colums in database
+                                                df.rename(columns={
+                                                    'Code': 'acc_username',
+                                                    'Password': 'acc_password',
+                                                    'Role': 'role_ID'
+                                                }, inplace=True)
+                                                df = df[['acc_username', 'acc_password', 'role_ID']]
+                                                
+                                                insert_query = """ INSERT INTO accounts (acc_username, acc_password, role_ID) VALUES (%s, %s, %s)"""
+                                                for index, row in df.iterrows():
+                                                    cur.execute(insert_query, (row['acc_username'], row['acc_password'], row['role_ID']))
+                                                    
+                                            conn.commit()
+                                            messagebox.showinfo("Success", "Accounts has been created",parent=import_window)
+                                                
+                                    except Exception as e:
+                                        messagebox.showerror("Error", f"An error occurred: {e}", parent=import_window)
+                                        conn.rollback()
+
+                                            ######################################## Import data page ###################################
                                 
                                 import_window = Toplevel()
                                 import_window.state('zoomed')
@@ -411,6 +443,9 @@ def login():
                                 
                                 import_courseFollowAcaYear_button = tk.Button(frame, text="Import courseFollowAcaYear table", font=("times new roman", 15, "bold"),  bg = "#40679E",fg="#FDFFE2",command=lambda: import_courseFollowAcaYear(entry_var.get().split(", ")),)
                                 import_courseFollowAcaYear_button.place(x=50, y=180) 
+
+                                create_btn = Button(frame, text="Create Account", font=('Times new Roman', 15), bg = "#40679E",fg="#FDFFE2", command=lambda: import_account(entry_var.get().split(", ")))
+                                create_btn.place(x=50, y=260)
                                 
                                 import_window.mainloop()
                             except pymysql.err.OperationalError as e:
@@ -418,7 +453,6 @@ def login():
                             except Exception as e:
                                 print(e)
                                 messagebox.showerror("Error", "Close all the windows and restart your program")
-    
     ##############################################################################################################################################################
 
     ######################################################### Function to create class ###########################################################################
@@ -1671,7 +1705,7 @@ def login():
                                         db_path = "./face-db"
                                         source_path = src_dir
                                         dest_path = des_dir
-                                        face_analysis.fromfiles(
+                                        face_analysis_emo.fromfiles(
                                             db_path=db_path,
                                             source_dir=source_path,
                                             dest_dir=dest_path,
@@ -2533,4 +2567,5 @@ def login_GUI():
     face.mainloop()
 
 if __name__ == "__main__":
+
     login_GUI()
