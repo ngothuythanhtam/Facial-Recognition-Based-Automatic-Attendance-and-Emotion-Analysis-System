@@ -19,7 +19,7 @@ The system supports automatic face detection and recognition to mark attendance,
 
 - **DeepFace** library for facial recognition and emotion analysis (Reference: https://github.com/serengil/deepface)
 - **MySQL** for storing face data and attendance records
-- **Tkinter** and **Flask** (or any web framework) for the GUI and web interface
+- **Tkinter** and **Django** for the GUI system and web interface
 
 ## Features
 
