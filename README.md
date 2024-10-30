@@ -54,4 +54,8 @@ The system architecture is divided into:
    cd Facial-Recognition-Based-Automatic-Attendance-and-Emotion-Analysis-System
    ```
 
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 ### Updating...
