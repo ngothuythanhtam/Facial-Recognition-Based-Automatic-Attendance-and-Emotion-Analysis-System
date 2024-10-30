@@ -42,7 +42,7 @@ The system architecture is divided into:
 
 ### Prerequisites
 
-- Python 3.7+
+- Python >=3.9 (We use Python 3.9.6 version)
 - MySQL Server
 - Required Python packages (see `requirements.txt`)
 
@@ -53,3 +53,5 @@ The system architecture is divided into:
    git clone https://github.com/ngothuythanhtam/Facial-Recognition-Based-Automatic-Attendance-and-Emotion-Analysis-System.git
    cd Facial-Recognition-Based-Automatic-Attendance-and-Emotion-Analysis-System
    ```
+
+### Updating...
