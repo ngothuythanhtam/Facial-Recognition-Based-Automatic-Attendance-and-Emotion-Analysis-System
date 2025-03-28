@@ -8,9 +8,6 @@ This project is a **Student Attendance and Emotion Analysis System** that levera
 - [Features](#features)
 - [System Architecture](#system-architecture)
 - [Installation](#installation)
-- [Usage](#usage)
-- [Evaluation](#evaluation)
-- [Future Development](#future-development)
 - [License](#license)
 
 ## Overview
